@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "prettier-plugin-go-template": "^0.0.15",
+    "vscode-langservers-extracted": "^4.10.0"
+  }
+}
