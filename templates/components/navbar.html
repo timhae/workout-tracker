@@ -1,5 +1,5 @@
-<div hx-boost="true" hx-target="#content" class="flex space-x-4 mb-6">
+<div hx-boost="true" hx-target="#content">
     {{ range $target := .Data.MenuItems }}
-    <a href="{{ $target.Link }}" class="block rounded rounded-md p-4 my-2">{{ $target.Name }}</a>
+    <a href="{{ $target.Link }}">{{ $target.Name }}</a>
     {{ end }}
 </div>

@@ -1,38 +1,51 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/donseba/go-htmx"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type App struct {
 	htmx *htmx.HTMX
-	// TODO: add gorm for db
+	db   *gorm.DB
+	ctx  *context.Context
 }
 
 func main() {
+	db, err := CreateDb()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ctx := context.Background()
 	app := &App{
 		htmx: htmx.New(),
+		db:   db,
+		ctx:  &ctx,
 	}
 
 	router := gin.Default()
 	router.SetTrustedProxies(nil)
+	router.Static("/static", "./static")
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/workouts")
 	})
 	router.GET("/workouts", app.Workouts)
-	router.GET("/exercises", app.Exercises)
-	router.GET("/exercises/create", app.CreateExercise)
-	router.GET("/exercises/:id/read", app.ReadExercise)
-	router.GET("/exercises/:id/update", app.UpdateExercise)
-	router.GET("/exercises/:id/delete", app.DeleteExercise)
 	router.GET("/plans", app.Plans)
 	router.GET("/measurements", app.Measurements)
-	err := router.Run(":8080")
+
+	router.GET("/exercises", app.Exercises)
+	router.POST("/exercise", app.CreateExercise)
+	router.GET("/exercise/:id", app.ReadExercise)
+	router.PUT("/exercise/:id", app.UpdateExercise)
+	router.DELETE("/exercise/:id", app.DeleteExercise)
+
+	err = router.Run(":8080")
 	log.Fatal(err)
 }
 
@@ -44,13 +57,15 @@ func (a *App) Workouts(c *gin.Context) {
 }
 
 func (a *App) Exercises(c *gin.Context) {
+	var exercises []Exercise
+	err, exercises := a.GetAllExercises()
+	if err != nil {
+
+	}
 	data := map[string]any{
-		"Exercises": []Exercise{
-			{ID: 0, Name: "ex1", Force: Pull, Level: Easy, Mechanic: Compound, Category: Strength},
-			{ID: 1, Name: "ex2", Force: Push, Level: Easy, Mechanic: Compound, Category: Strength},
-		},
+		"Exercises": exercises,
 		"Columns": []string{
-			"ID", "Name", "Force", "Level", "Mechanic", "Category",
+			"ID", "Delete", "Name", "Force", "Level", "Mechanic", "Category",
 		},
 	}
 	a.render(c, &data, "pages/exercises.html")
@@ -60,7 +75,12 @@ func (a *App) CreateExercise(c *gin.Context) {
 }
 
 func (a *App) ReadExercise(c *gin.Context) {
-	//     id:= c.Param("id")
+	id := c.Param("id")
+	data := map[string]any{
+		"Exercise": "bla",
+		"ID":       id,
+	}
+	a.render(c, &data, "pages/exercise.html")
 }
 
 func (a *App) UpdateExercise(c *gin.Context) {
@@ -68,7 +88,8 @@ func (a *App) UpdateExercise(c *gin.Context) {
 }
 
 func (a *App) DeleteExercise(c *gin.Context) {
-
+	// TODO: remove from db
+	a.Exercises(c)
 }
 
 func (a *App) Plans(c *gin.Context) {
@@ -100,9 +121,9 @@ func mainContent() htmx.RenderableComponent {
 		Link string
 	}{
 		{"Workouts", "/workouts"},
-		{"Exercises", "/exercises"},
 		{"Plans", "/plans"},
 		{"Measurements", "/measurements"},
+		{"Exercises", "/exercises"},
 	}
 
 	data := map[string]any{

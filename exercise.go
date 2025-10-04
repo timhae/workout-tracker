@@ -13,11 +13,11 @@ type Exercise struct {
 	Level           Level
 	Mechanic        Mechanic
 	Category        Category
-	Equipment       []string
-	PrimaryMuscles  []string
-	SecondayMuscles []string
-	Instructions    []string
-	images          []string
+	Equipment       []Equipment `gorm:"type:text[]"`
+	PrimaryMuscles  []Muscle    `gorm:"type:text[]"`
+	SecondayMuscles []Muscle    `gorm:"type:text[]"`
+	Instructions    []string    `gorm:"type:text[]"`
+	images          []string    `gorm:"type:text[]"`
 }
 
 type Force uint
@@ -84,6 +84,34 @@ var categoryName = map[Category]string{
 
 func (c Category) String() string {
 	return categoryName[c]
+}
+
+type Equipment uint
+
+const (
+	Dumbbells Equipment = iota
+)
+
+var equipmentName = map[Equipment]string{
+	Dumbbells: "Dumbbells",
+}
+
+func (e Equipment) String() string {
+	return equipmentName[e]
+}
+
+type Muscle uint
+
+const (
+	Bizeps Muscle = iota
+)
+
+var muscleName = map[Muscle]string{
+	Bizeps: "Bizeps",
+}
+
+func (m Muscle) String() string {
+	return muscleName[m]
 }
 
 //   {

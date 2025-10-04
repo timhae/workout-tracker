@@ -5,22 +5,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ .Data.Title }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/htmx.org@2.0.0"></script>
+    <script src="/static/htmx.min.js"></script>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+        }
+    </style>
 </head>
 
-<body class="p-10">
-    <div class="flex flex-col">
-        <div class="flex-none w-48">
-
-            {{ .Partials.Navbar }}
-
-        </div>
-        <div class="grow p-4" id="content">
-
-            {{ .Partials.Content }}
-
-        </div>
+<body>
+    <div>
+        {{ .Partials.Navbar }}
+    </div>
+    <div id="content">
+        {{ .Partials.Content }}
     </div>
 </body>
 
