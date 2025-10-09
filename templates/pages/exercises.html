@@ -1,4 +1,5 @@
 <div hx-boost="true" hx-target="#content">
+    <a href="/exercise">create new</a>
     <table>
         <thead>
             <tr>
@@ -17,6 +18,11 @@
                 <td>{{ $exercise.Level }}</td>
                 <td>{{ $exercise.Mechanic }}</td>
                 <td>{{ $exercise.Category }}</td>
+                <td>{{ $exercise.PrimaryMuscle }}</td>
+                <td>{{ $exercise.SecondaryMuscles }}</td>
+                <td>{{ $exercise.Equipment }}</td>
+                <td>{{ $exercise.Instructions }}</td>
+                <td>{{ $exercise.Images }}</td>
             </tr>
             {{ end }}
         </tbody>

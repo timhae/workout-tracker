@@ -1,23 +1,24 @@
 package main
 
 import (
+	"encoding/json"
 	"time"
 )
 
 type Exercise struct {
-	ID              uint
-	CreatedAt       time.Time
-	UpdatedAt       time.Time
-	Name            string
-	Force           Force
-	Level           Level
-	Mechanic        Mechanic
-	Category        Category
-	Equipment       []Equipment `gorm:"type:text[]"`
-	PrimaryMuscles  []Muscle    `gorm:"type:text[]"`
-	SecondayMuscles []Muscle    `gorm:"type:text[]"`
-	Instructions    []string    `gorm:"type:text[]"`
-	images          []string    `gorm:"type:text[]"`
+	ID               uint
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	Name             string      `form:"name" binding:"required"`
+	Force            Force       `form:"force" binding:"number,gte=0"`
+	Level            Level       `form:"level" binding:"number,gte=0"`
+	Mechanic         Mechanic    `form:"mechanic" binding:"number,gte=0"`
+	Category         Category    `form:"category" binding:"number,gte=0"`
+	PrimaryMuscle    Muscle      `form:"primary" binding:"number,gte=0"`
+	SecondaryMuscles []Muscle    `form:"secondary" binding:"required" gorm:"type:jsonb;serializer:json"`
+	Equipment        []Equipment `form:"equipment" binding:"required" gorm:"type:jsonb;serializer:json"`
+	Instructions     string      `form:"instructions" binding:"required"`
+	Images           string      `form:"images" binding:"required"`
 }
 
 type Force uint
@@ -25,11 +26,15 @@ type Force uint
 const (
 	Pull Force = iota
 	Push
+	Static
+
+	_ForceCount
 )
 
 var forceName = map[Force]string{
-	Pull: "Pull",
-	Push: "Push",
+	Pull:   "Pull",
+	Push:   "Push",
+	Static: "Static",
 }
 
 func (f Force) String() string {
@@ -42,6 +47,8 @@ const (
 	Easy Level = iota
 	Middle
 	Hard
+
+	_LevelCount
 )
 
 var levelName = map[Level]string{
@@ -59,6 +66,8 @@ type Mechanic uint
 const (
 	Compound Mechanic = iota
 	Isolation
+
+	_MechanicCount
 )
 
 var mechanicName = map[Mechanic]string{
@@ -73,13 +82,17 @@ func (m Mechanic) String() string {
 type Category uint
 
 const (
-	Strength Category = iota
-	Endurance
+	Endurance Category = iota
+	Strength
+	Stretching
+
+	_CategoryCount
 )
 
 var categoryName = map[Category]string{
-	Strength:  "Strength",
-	Endurance: "Endurance",
+	Endurance:  "Endurance",
+	Strength:   "Strength",
+	Stretching: "Stretching",
 }
 
 func (c Category) String() string {
@@ -89,117 +102,103 @@ func (c Category) String() string {
 type Equipment uint
 
 const (
-	Dumbbells Equipment = iota
+	Bands Equipment = iota
+	Barbell
+	Bench
+	Body
+	Cable
+	Dumbbells
+	Kettlebells
+	Machine
+	Other
+
+	_EquipmentCount
 )
 
 var equipmentName = map[Equipment]string{
-	Dumbbells: "Dumbbells",
+	Bands:       "Bands",
+	Barbell:     "Barbell",
+	Bench:       "Bench",
+	Body:        "Body",
+	Cable:       "Cable",
+	Dumbbells:   "Dumbbells",
+	Kettlebells: "Kettlebells",
+	Machine:     "Machine",
+	Other:       "Other",
 }
 
 func (e Equipment) String() string {
 	return equipmentName[e]
 }
 
+func (m Equipment) MarshalJSON() ([]byte, error) {
+	return json.Marshal(uint(m))
+}
+
+func (m *Equipment) UnmarshalJSON(data []byte) error {
+	var v uint
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	*m = Equipment(v)
+	return nil
+}
+
 type Muscle uint
 
 const (
-	Bizeps Muscle = iota
+	Abdominals Muscle = iota
+	Abductors
+	Adductors
+	Biceps
+	Calves
+	Chest
+	Forearms
+	Glutes
+	Hamstrings
+	Lats
+	LowerBack
+	Neck
+	Quadriceps
+	Shoulders
+	Traps
+	Triceps
+
+	_MuscleCount
 )
 
 var muscleName = map[Muscle]string{
-	Bizeps: "Bizeps",
+	Abdominals: "Abdominals",
+	Abductors:  "Abductors",
+	Adductors:  "Adductors",
+	Biceps:     "Biceps",
+	Calves:     "Calves",
+	Chest:      "Chest",
+	Forearms:   "Forearms",
+	Glutes:     "Glutes",
+	Hamstrings: "Hamstrings",
+	Lats:       "Lats",
+	LowerBack:  "LowerBack",
+	Neck:       "Neck",
+	Quadriceps: "Quadriceps",
+	Shoulders:  "Shoulders",
+	Traps:      "Traps",
+	Triceps:    "Triceps",
 }
 
 func (m Muscle) String() string {
 	return muscleName[m]
 }
 
-//   {
-//     "name": "3/4 Sit-Up",
-//     "force": "pull",
-//     "level": "beginner",
-//     "mechanic": "compound",
-//     "equipment": "body only",
-//     "primaryMuscles": [
-//       "abdominals"
-//     ],
-//     "secondaryMuscles": [],
-//     "instructions": [
-//       "Lie down on the floor and secure your feet. Your legs should be bent at the knees.",
-//       "Place your hands behind or to the side of your head. You will begin with your back on the ground. This will be your starting position.",
-//       "Flex your hips and spine to raise your torso toward your knees.",
-//       "At the top of the contraction your torso should be perpendicular to the ground. Reverse the motion, going only ¾ of the way down.",
-//       "Repeat for the recommended amount of repetitions."
-//     ],
-//     "category": "strength",
-//     "images": [
-//       "3_4_Sit-Up/0.jpg",
-//       "3_4_Sit-Up/1.jpg"
-//     ],
-//     "id": "3_4_Sit-Up"
-//   },
-// Muskelgruppe
-//     Arme(92)
-//     — Oberarme(78)
-//     —— Bizeps(46)
-//     —— Trizeps(32)
-//     — Unterarme(14)
-//     Bauch(98)
-//     — gerade Bauchmuskeln(72)
-//     —— obere Bauchmuskeln(52)
-//     —— untere Bauchmuskeln(51)
-//     — seitliche Bauchmuskeln(44)
-//     Beine(207)
-//     — Hüfte(149)
-//     —— Abduktoren(15)
-//     —— Po(136)
-//     — Oberschenkel(152)
-//     —— Adduktoren(22)
-//     —— Beinbizeps(97)
-//     —— Quadrizeps(96)
-//     — Unterschenkel(35)
-//     Brust(31)
-//     — mittlere Brust(18)
-//     — obere Brust(14)
-//     — untere Brust(11)
-//     Rücken(77)
-//     — oberer Rücken(45)
-//     —— Breiter Rückenmuskel(24)
-//     —— Trapezmuskel(33)
-//     — unterer Rücken(32)
-//     Schulter(46)
-//     — hintere Schultern(16)
-//     — seitliche Schultern(22)
-//     — vordere Schultern(27)
+func (m Muscle) MarshalJSON() ([]byte, error) {
+	return json.Marshal(uint(m))
+}
 
-// Ausrüstung
-//     Fitnessband
-//     Hantelbank
-//     Kabelturm
-//     Kettlebell
-//     Kurzhantel
-//     Langhantel
-//     Multipresse
-//     ohne Ausrüstung
-//     Sonstiges
-//     SZ-Stange
-//     Trainingsmaschine
-
-// Übungstyp
-//     Ausdauer
-//     Beweglichkeit
-//     Kraft
-
-// Schwierigkeit
-//     Leicht
-//     Mittel
-//     Schwer
-
-// Trainingsziel
-//     Abnehmen
-//     Beweglichkeit
-//     Haltung
-//     Koordination
-//     Kraftsteigerung
-//     Muskelaufbau
-//     Rehabilitation/Prävention
+func (m *Muscle) UnmarshalJSON(data []byte) error {
+	var v uint
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
+	}
+	*m = Muscle(v)
+	return nil
+}

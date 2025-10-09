@@ -8,5 +8,6 @@ pkgs.mkShell {
     gopls
     inotify-tools
     nodejs_24
+    postgresql_17
   ];
 }
