@@ -1,91 +1,159 @@
 <div>
-    <p>Error: {{ .Data.Error }}</p>
-    <p>Input: {{ .Data.Input }}</p>
-    <form>
-        <p>
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" autocomplete="off" value="{{ .Data.Input.Name }}" required />
-        </p>
-        <fieldset>
-            <legend>Force</legend>
-            {{ range $idx, $force := .Data.PossibleValues.Forces }}
-            <div>
-                <input type="radio" id="force_{{ $force }}" name="force" autocomplete="off" value="{{ $idx }}" {{ if eq
-                    $force $.Data.Input.Force }}checked{{ end }} />
-                <label for="force_{{ $force }}">{{ $force }}</label>
-            </div>
+  <p>Error: {{ .Data.Error }}</p>
+  <p>Input: {{ .Data.Input }}</p>
+  <form>
+    <p>
+      <label for="name">Name</label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        autocomplete="off"
+        value="{{ .Data.Input.Name }}"
+        required
+      />
+    </p>
+    <fieldset>
+      <legend>Force</legend>
+      {{ range $idx, $force := .Data.PossibleValues.Forces }}
+        <div>
+          <input
+            type="radio"
+            id="force_{{ $force }}"
+            name="force"
+            autocomplete="off"
+            value="{{ $idx }}"
+            {{ if eq $force $.Data.Input.Force }}checked{{ end }}
+          />
+          <label for="force_{{ $force }}">{{ $force }}</label>
+        </div>
+      {{ end }}
+    </fieldset>
+    <fieldset>
+      <legend>Level</legend>
+      {{ range $idx, $level := .Data.PossibleValues.Levels }}
+        <div>
+          <input
+            type="radio"
+            id="level_{{ $level }}"
+            name="level"
+            autocomplete="off"
+            value="{{ $idx }}"
+            {{ if eq $level $.Data.Input.Level }}checked{{ end }}
+          />
+          <label for="level_{{ $level }}">{{ $level }}</label>
+        </div>
+      {{ end }}
+    </fieldset>
+    <fieldset>
+      <legend>Mechanic</legend>
+      {{ range $idx, $mechanic := .Data.PossibleValues.Mechanics }}
+        <div>
+          <input
+            type="radio"
+            id="mechanic_{{ $mechanic }}"
+            name="mechanic"
+            autocomplete="off"
+            value="{{ $idx }}"
+            {{ if eq $mechanic $.Data.Input.Mechanic }}checked{{ end }}
+          />
+          <label for="mechanic_{{ $mechanic }}">{{ $mechanic }}</label>
+        </div>
+      {{ end }}
+    </fieldset>
+    <fieldset>
+      <legend>Category</legend>
+      {{ range $idx, $category := .Data.PossibleValues.Categories }}
+        <div>
+          <input
+            type="radio"
+            id="category_{{ $category }}"
+            name="category"
+            autocomplete="off"
+            value="{{ $idx }}"
+            {{ if eq $category $.Data.Input.Category }}checked{{ end }}
+          />
+          <label for="category_{{ $category }}">{{ $category }}</label>
+        </div>
+      {{ end }}
+    </fieldset>
+    <fieldset>
+      <legend>Primary Muscle</legend>
+      {{ range $idx, $muscle := .Data.PossibleValues.Muscles }}
+        <div>
+          <input
+            type="radio"
+            id="primary_{{ $muscle }}"
+            name="primary"
+            autocomplete="off"
+            value="{{ $idx }}"
+            {{ if eq $muscle $.Data.Input.PrimaryMuscle }}checked{{ end }}
+          />
+          <label for="primary_{{ $muscle }}">{{ $muscle }}</label>
+        </div>
+      {{ end }}
+    </fieldset>
+    <fieldset>
+      <legend>Secondary Muscles</legend>
+      {{ range $idx, $muscle := .Data.PossibleValues.Muscles }}
+        <div>
+          <input
+            type="checkbox"
+            id="secondary_{{ $muscle }}"
+            name="secondary"
+            autocomplete="off"
+            value="{{ $idx }}"
+            {{ range $inputMuscle :=$.Data.Input.SecondaryMuscles }}
+              {{ if eq $inputMuscle $muscle }}checked{{ end }}
             {{ end }}
-        </fieldset>
-        <fieldset>
-            <legend>Level</legend>
-            {{ range $idx, $level := .Data.PossibleValues.Levels }}
-            <div>
-                <input type="radio" id="level_{{ $level }}" name="level" autocomplete="off" value="{{ $idx }}" {{ if eq
-                    $level $.Data.Input.Level }}checked{{ end }} />
-                <label for="level_{{ $level }}">{{ $level }}</label>
-            </div>
+          />
+          <label for="secondary_{{ $muscle }}">{{ $muscle }}</label>
+        </div>
+      {{ end }}
+    </fieldset>
+    <fieldset>
+      <legend>Equipment</legend>
+      {{ range $idx, $equipment := .Data.PossibleValues.Equipments }}
+        <div>
+          <input
+            type="checkbox"
+            id="equipment_{{ $equipment }}"
+            name="equipment"
+            autocomplete="off"
+            value="{{ $idx }}"
+            {{ range $inputEquipment :=$.Data.Input.Equipment }}
+              {{ if eq $inputEquipment $equipment }}checked{{ end }}
             {{ end }}
-        </fieldset>
-        <fieldset>
-            <legend>Mechanic</legend>
-            {{ range $idx, $mechanic := .Data.PossibleValues.Mechanics }}
-            <div>
-                <input type="radio" id="mechanic_{{ $mechanic }}" name="mechanic" autocomplete="off" value="{{ $idx }}"
-                    {{ if eq $mechanic $.Data.Input.Mechanic }}checked{{ end }} />
-                <label for="mechanic_{{ $mechanic }}">{{ $mechanic }}</label>
-            </div>
-            {{ end }}
-        </fieldset>
-        <fieldset>
-            <legend>Category</legend>
-            {{ range $idx, $category := .Data.PossibleValues.Categories }}
-            <div>
-                <input type="radio" id="category_{{ $category }}" name="category" autocomplete="off" value="{{ $idx }}"
-                    {{ if eq $category $.Data.Input.Category }}checked{{ end }} />
-                <label for="category_{{ $category }}">{{ $category }}</label>
-            </div>
-            {{ end }}
-        </fieldset>
-        <fieldset>
-            <legend>Primary Muscle</legend>
-            {{ range $idx, $muscle := .Data.PossibleValues.Muscles }}
-            <div>
-                <input type="radio" id="primary_{{ $muscle }}" name="primary" autocomplete="off" value="{{ $idx }}" {{
-                    if eq $muscle $.Data.Input.PrimaryMuscle }}checked{{ end }} />
-                <label for="primary_{{ $muscle }}">{{ $muscle }}</label>
-            </div>
-            {{ end }}
-        </fieldset>
-        <fieldset>
-            <legend>Secondary Muscles</legend>
-            {{ range $idx, $muscle := .Data.PossibleValues.Muscles }}
-            <div>
-                <input type="checkbox" id="secondary_{{ $muscle }}" name="secondary" autocomplete="off"
-                    value="{{ $idx }}" {{ range $inputMuscle :=$.Data.Input.SecondaryMuscles }}{{ if eq $inputMuscle
-                    $muscle }}checked{{ end }}{{ end }} />
-                <label for="secondary_{{ $muscle }}">{{ $muscle }}</label>
-            </div>
-            {{ end }}
-        </fieldset>
-        <fieldset>
-            <legend>Equipment</legend>
-            {{ range $idx, $equipment := .Data.PossibleValues.Equipments }}
-            <div>
-                <input type="checkbox" id="equipment_{{ $equipment }}" name="equipment" autocomplete="off"
-                    value="{{ $idx }}" {{ range $inputEquipment :=$.Data.Input.Equipment }}{{ if eq $inputEquipment
-                    $equipment }}checked{{ end }}{{ end }} />
-                <label for="equipment_{{ $equipment }}">{{ $equipment }}</label>
-            </div>
-            {{ end }}
-        </fieldset>
-        <p>
-            <textarea id="instructions" name="instructions" autocomplete="off" rows="15" cols="80"
-                placeholder="Instructions" />{{ .Data.Input.Instructions }}</textarea>
-        </p>
-        <p>
-            <label for="images">Images</label>
-            <input type="file" id="images" name="images" autocomplete="off" multiple />
-        </p>
-        <p><button type="submit" hx-post="/exercise" hx-target="#content">Create</button></p>
-    </form>
+          />
+          <label for="equipment_{{ $equipment }}">{{ $equipment }}</label>
+        </div>
+      {{ end }}
+    </fieldset>
+    <p>
+      <!-- prettier-ignore -->
+      <textarea
+        id="instructions"
+        name="instructions"
+        autocomplete="off"
+        rows="15"
+        cols="80"
+        placeholder="Instructions"
+      >{{ .Data.Input.Instructions }}</textarea>
+    </p>
+    <p>
+      <label for="images">Images</label>
+      <input
+        type="file"
+        id="images"
+        name="images"
+        autocomplete="off"
+        multiple
+      />
+    </p>
+    <p>
+      <button type="submit" hx-post="/exercise" hx-target="#content">
+        Create
+      </button>
+    </p>
+  </form>
 </div>

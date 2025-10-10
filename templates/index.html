@@ -1,39 +1,37 @@
 <!doctype html>
 <html lang="en">
-
-<head>
+  <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Workout Tracker</title>
     <script src="/static/htmx.min.js"></script>
     <style>
-        table,
-        th,
-        td {
-            border: 1px solid black;
-        }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
 
-        .error-message {
-            color: darkred;
-        }
+      .error-message {
+        color: darkred;
+      }
 
-        .error input {
-            box-shadow: 0 0 3px darkred;
-        }
+      .error input {
+        box-shadow: 0 0 3px darkred;
+      }
 
-        .valid input {
-            box-shadow: 0 0 3px darkgreen;
-        }
+      .valid input {
+        box-shadow: 0 0 3px darkgreen;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div>
-        {{ .Partials.Navbar }}
+      {{ .Partials.Navbar }}
     </div>
     <div id="content">
-        {{ .Partials.Content }}
+      {{ .Partials.Content }}
     </div>
-</body>
-
+  </body>
 </html>

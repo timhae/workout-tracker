@@ -1,30 +1,30 @@
 <div hx-boost="true" hx-target="#content">
-    <a href="/exercise">create new</a>
-    <table>
-        <thead>
-            <tr>
-                {{ range .Data.Columns }}
-                <th>{{ . }}</th>
-                {{ end }}
-            </tr>
-        </thead>
-        <tbody>
-            {{ range $exercise := .Data.Exercises }}
-            <tr>
-                <td><a href="/exercise/{{ $exercise.ID }}">{{ $exercise.ID }}</a></td>
-                <td><button hx-delete="/exercise/{{ $exercise.ID }}">Del</button></td>
-                <td>{{ $exercise.Name }}</td>
-                <td>{{ $exercise.Force }}</td>
-                <td>{{ $exercise.Level }}</td>
-                <td>{{ $exercise.Mechanic }}</td>
-                <td>{{ $exercise.Category }}</td>
-                <td>{{ $exercise.PrimaryMuscle }}</td>
-                <td>{{ $exercise.SecondaryMuscles }}</td>
-                <td>{{ $exercise.Equipment }}</td>
-                <td>{{ $exercise.Instructions }}</td>
-                <td>{{ $exercise.Images }}</td>
-            </tr>
-            {{ end }}
-        </tbody>
-    </table>
+  <a href="/exercise">create new</a>
+  <table>
+    <thead>
+      <tr>
+        {{ range .Data.Columns }}
+          <th>{{ . }}</th>
+        {{ end }}
+      </tr>
+    </thead>
+    <tbody>
+      {{ range $exercise := .Data.Exercises }}
+        <tr>
+          <td><a href="/exercise/{{ $exercise.ID }}">{{ $exercise.ID }}</a></td>
+          <td><button hx-delete="/exercise/{{ $exercise.ID }}">Del</button></td>
+          <td>{{ $exercise.Name }}</td>
+          <td>{{ $exercise.Force }}</td>
+          <td>{{ $exercise.Level }}</td>
+          <td>{{ $exercise.Mechanic }}</td>
+          <td>{{ $exercise.Category }}</td>
+          <td>{{ $exercise.PrimaryMuscle }}</td>
+          <td>{{ $exercise.SecondaryMuscles }}</td>
+          <td>{{ $exercise.Equipment }}</td>
+          <td>{{ $exercise.Instructions }}</td>
+          <td>{{ $exercise.Images }}</td>
+        </tr>
+      {{ end }}
+    </tbody>
+  </table>
 </div>

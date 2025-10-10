@@ -4,8 +4,8 @@
     {
       "files": ["*.html"],
       "options": {
-        "parser": "go-template",
-      },
-    },
-  ],
+        "parser": "go-template"
+      }
+    }
+  ]
 }
