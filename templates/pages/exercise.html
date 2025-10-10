@@ -1,7 +1,9 @@
 <div>
-  <p>Error: {{ .Data.Error }}</p>
-  <p>Input: {{ .Data.Input }}</p>
-  <form>
+  <form
+    hx-encoding="multipart/form-data"
+    hx-post="/exercise"
+    hx-target="#content"
+  >
     <p>
       <label for="name">Name</label>
       <input
@@ -9,7 +11,7 @@
         id="name"
         name="name"
         autocomplete="off"
-        value="{{ .Data.Input.Name }}"
+        hx-preserve
         required
       />
     </p>
@@ -93,7 +95,13 @@
         </div>
       {{ end }}
     </fieldset>
-    <fieldset>
+    <fieldset
+      class="{{ if eq (len .Data.Input.SecondaryMuscles) 0 }}
+        invalid
+      {{ else }}
+        valid
+      {{ end }}"
+    >
       <legend>Secondary Muscles</legend>
       {{ range $idx, $muscle := .Data.PossibleValues.Muscles }}
         <div>
@@ -103,6 +111,8 @@
             name="secondary"
             autocomplete="off"
             value="{{ $idx }}"
+            hx-post="/exercise"
+            hx-headers='{"X-Validation": "true"}'
             {{ range $inputMuscle :=$.Data.Input.SecondaryMuscles }}
               {{ if eq $inputMuscle $muscle }}checked{{ end }}
             {{ end }}
@@ -111,9 +121,15 @@
         </div>
       {{ end }}
     </fieldset>
-    <fieldset>
+    <fieldset
+      class="{{ if eq (len .Data.Input.Equipment) 0 }}
+        invalid
+      {{ else }}
+        valid
+      {{ end }}"
+    >
       <legend>Equipment</legend>
-      {{ range $idx, $equipment := .Data.PossibleValues.Equipments }}
+      {{ range $idx, $equipment := .Data.PossibleValues.Equipment }}
         <div>
           <input
             type="checkbox"
@@ -121,6 +137,8 @@
             name="equipment"
             autocomplete="off"
             value="{{ $idx }}"
+            hx-post="/exercise"
+            hx-headers='{"X-Validation": "true"}'
             {{ range $inputEquipment :=$.Data.Input.Equipment }}
               {{ if eq $inputEquipment $equipment }}checked{{ end }}
             {{ end }}
@@ -130,7 +148,6 @@
       {{ end }}
     </fieldset>
     <p>
-      <!-- prettier-ignore -->
       <textarea
         id="instructions"
         name="instructions"
@@ -138,7 +155,9 @@
         rows="15"
         cols="80"
         placeholder="Instructions"
-      >{{ .Data.Input.Instructions }}</textarea>
+        hx-preserve
+        required
+      ></textarea>
     </p>
     <p>
       <label for="images">Images</label>
@@ -148,12 +167,11 @@
         name="images"
         autocomplete="off"
         multiple
+        hx-preserve
       />
     </p>
     <p>
-      <button type="submit" hx-post="/exercise" hx-target="#content">
-        Create
-      </button>
+      <button type="post">Create</button>
     </p>
   </form>
 </div>

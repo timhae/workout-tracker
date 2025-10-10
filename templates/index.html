@@ -12,15 +12,13 @@
         border: 1px solid black;
       }
 
-      .error-message {
-        color: darkred;
-      }
-
-      .error input {
+      input:invalid:required,
+      fieldset.invalid {
         box-shadow: 0 0 3px darkred;
       }
 
-      .valid input {
+      input:valid,
+      fieldset.valid {
         box-shadow: 0 0 3px darkgreen;
       }
     </style>

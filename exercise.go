@@ -18,7 +18,7 @@ type Exercise struct {
 	SecondaryMuscles []Muscle    `form:"secondary" binding:"required" gorm:"type:jsonb;serializer:json"`
 	Equipment        []Equipment `form:"equipment" binding:"required" gorm:"type:jsonb;serializer:json"`
 	Instructions     string      `form:"instructions" binding:"required"`
-	Images           string      `form:"images" binding:"required"`
+	Images           string
 }
 
 type Force uint

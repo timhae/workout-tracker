@@ -29,9 +29,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err != nil {
-		log.Fatal(err)
-	}
 	ctx := context.Background()
 	app := &App{
 		htmx: htmx.New(),
@@ -113,6 +110,7 @@ func (a *App) Exercises(c *gin.Context) {
 
 func (a *App) CreateExercise(c *gin.Context) {
 	exercise := Exercise{}
+	validationRequest := c.Request.Header.Get("X-Validation") == "true"
 	var errorMsg string
 
 	if c.Request.Method == "POST" {
@@ -121,7 +119,29 @@ func (a *App) CreateExercise(c *gin.Context) {
 			errorMsg = err.Error()
 		}
 
-		if errorMsg == "" {
+		if errorMsg == "" && !validationRequest {
+			form, err := c.MultipartForm()
+			if err != nil {
+				log.Printf("form error: %v+", err)
+				errorMsg = err.Error()
+			} else {
+				files := form.File["images"]
+				fileNames := ""
+
+				for _, file := range files {
+					log.Printf("saving file: %v+", file.Filename)
+					err := c.SaveUploadedFile(file, "./static/images/"+file.Filename)
+					fileNames += file.Filename + ";"
+					if err != nil {
+						log.Printf("upload error: %v+", err)
+						errorMsg += err.Error()
+					}
+				}
+				exercise.Images = fileNames
+			}
+		}
+
+		if errorMsg == "" && !validationRequest {
 			err := gorm.G[Exercise](a.db).Create(*a.ctx, &exercise)
 			if err != nil {
 				log.Printf("db err: %v+", err)
@@ -129,21 +149,20 @@ func (a *App) CreateExercise(c *gin.Context) {
 			}
 		}
 
-		if errorMsg == "" {
+		if errorMsg == "" && !validationRequest {
 			c.Header("HX-Location", `{"path":"/exercises", "target":"#content"}`)
 			return
 		}
 	}
 
 	data := map[string]any{
-		"Error": errorMsg,
 		"PossibleValues": map[string]any{
 			"Forces":     AllValues[Force](uint(_ForceCount)),
 			"Levels":     AllValues[Level](uint(_LevelCount)),
 			"Mechanics":  AllValues[Mechanic](uint(_MechanicCount)),
 			"Categories": AllValues[Category](uint(_CategoryCount)),
 			"Muscles":    AllValues[Muscle](uint(_MuscleCount)),
-			"Equipments": AllValues[Equipment](uint(_EquipmentCount)),
+			"Equipment":  AllValues[Equipment](uint(_EquipmentCount)),
 		},
 		"Input": exercise,
 	}
