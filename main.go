@@ -83,7 +83,7 @@ func (a *App) Measurements(c *gin.Context) {
 
 func (a *App) Exercises(c *gin.Context) {
 	var exercises []Exercise
-	exercises, err := gorm.G[Exercise](a.db).Find(*a.ctx)
+	exercises, err := gorm.G[Exercise](a.db).Order("id").Find(*a.ctx)
 	if err != nil {
 		log.Printf("error fetching exercises: %v", err)
 	}
