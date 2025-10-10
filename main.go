@@ -128,11 +128,11 @@ func (a *App) CreateExercise(c *gin.Context) {
 				errorMsg = err.Error()
 			}
 		}
-	}
 
-	if errorMsg == "" && c.Request.Method == "POST" {
-		c.Header("HX-Location", `{"path":"/exercises", "target":"#content"}`)
-		return
+		if errorMsg == "" {
+			c.Header("HX-Location", `{"path":"/exercises", "target":"#content"}`)
+			return
+		}
 	}
 
 	data := map[string]any{
@@ -145,7 +145,7 @@ func (a *App) CreateExercise(c *gin.Context) {
 			"Muscles":    AllValues[Muscle](uint(_MuscleCount)),
 			"Equipments": AllValues[Equipment](uint(_EquipmentCount)),
 		},
-		"Selected": exercise,
+		"Input": exercise,
 	}
 	a.render(c, &data, "pages/exercise.html")
 }
