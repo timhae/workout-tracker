@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workout Tracker</title>
+    <script src="/static/htmx.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+
+  <body>
+    <div>
+      <div hx-boost="true" hx-target="#content"><a href="/workouts">Workouts</a><a href="/plans">Plans</a><a href="/measurements">Measurements</a><a href="/exercises">Exercises</a></div>
+
+    </div>
+    <div id="content">
+      <div hx-boost="true" hx-target="#content">
+  <a href="/exercise">create new</a>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Delete</th><th>Name</th><th>Force</th><th>Level</th><th>Mechanic</th><th>Category</th><th>Primary</th><th>Secondary</th><th>Equipment</th><th>Instructions</th><th>Images</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+          <td><a href="/exercise/1">1</a></td>
+          <td><button hx-delete="/exercise/1">Del</button></td>
+          <td>fff</td>
+          <td>Pull</td>
+          <td>Easy</td>
+          <td>Compound</td>
+          <td>Endurance</td>
+          <td>Abdominals</td>
+          <td>[Chest]</td>
+          <td>[Other]</td>
+          <td>asf</td>
+          <td>PXL_20221129_202949801.jpg;PXL_20221129_203004190.jpg;</td>
+        </tr>
+    </tbody>
+  </table>
+</div>
+
+    </div>
+  </body>
+</html>

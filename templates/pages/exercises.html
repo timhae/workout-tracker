@@ -3,13 +3,13 @@
   <table>
     <thead>
       <tr>
-        {{ range .Data.Columns }}
+        {{ range .Data.Columns -}}
           <th>{{ . }}</th>
-        {{ end }}
+        {{- end }}
       </tr>
     </thead>
     <tbody>
-      {{ range $exercise := .Data.Exercises }}
+      {{ range $exercise := .Data.Exercises -}}
         <tr>
           <td><a href="/exercise/{{ $exercise.ID }}">{{ $exercise.ID }}</a></td>
           <td><button hx-delete="/exercise/{{ $exercise.ID }}">Del</button></td>
@@ -24,7 +24,7 @@
           <td>{{ $exercise.Instructions }}</td>
           <td>{{ $exercise.Images }}</td>
         </tr>
-      {{ end }}
+      {{- end }}
     </tbody>
   </table>
 </div>

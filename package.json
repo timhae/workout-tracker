@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "prettier": "fd html | xargs prettier --write"
+    "prettier": "fd html templates | xargs prettier --write"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

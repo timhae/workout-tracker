@@ -1,5 +1,5 @@
 <div hx-boost="true" hx-target="#content">
-  {{ range $target := .Data.MenuItems }}
+  {{- range $target := .Data.MenuItems -}}
     <a href="{{ $target.Link }}">{{ $target.Name }}</a>
-  {{ end }}
+  {{- end -}}
 </div>

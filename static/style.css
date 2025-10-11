@@ -1,0 +1,17 @@
+table,
+th,
+td {
+  border: 1px solid black;
+}
+
+input:invalid:required,
+textarea:invalid:required,
+fieldset.invalid {
+  box-shadow: 0 0 3px darkred;
+}
+
+input:valid,
+textarea:valid,
+fieldset.valid {
+  box-shadow: 0 0 3px darkgreen;
+}
