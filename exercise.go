@@ -288,7 +288,7 @@ func (a *App) ValidateExercise(c *gin.Context) {
 	validationRequest := c.Request.Header.Get("X-Validation-Only") == "true"
 	id := c.Param("id")
 
-	if err = c.ShouldBindWith(&exercise, binding.Form); err != nil {
+	if err = c.ShouldBindWith(&exercise, binding.FormMultipart); err != nil {
 		log.Printf("input err: %v+", err)
 	} else if !validationRequest {
 		err = a.insertExercise(id, c, &exercise)

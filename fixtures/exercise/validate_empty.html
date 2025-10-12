@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workout Tracker</title>
+    <script src="/static/htmx.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+
+  <body>
+    <div>
+      <div hx-boost="true" hx-target="#content"><a href="/workout/list">Workouts</a><a href="/plan/list">Plans</a><a href="/measurement/list">Measurements</a><a href="/exercise/list">Exercises</a></div>
+
+    </div>
+    <div id="content">
+      <div>
+  <p>Key: &#39;Exercise.Name&#39; Error:Field validation for &#39;Name&#39; failed on the &#39;required&#39; tag
+Key: &#39;Exercise.SecondaryMuscles&#39; Error:Field validation for &#39;SecondaryMuscles&#39; failed on the &#39;required&#39; tag
+Key: &#39;Exercise.Equipment&#39; Error:Field validation for &#39;Equipment&#39; failed on the &#39;required&#39; tag
+Key: &#39;Exercise.Instructions&#39; Error:Field validation for &#39;Instructions&#39; failed on the &#39;required&#39; tag</p>
+  <form
+    hx-encoding="multipart/form-data"
+    hx-post="/exercise/validate"
+    hx-target="#content"
+  >
+    <p>
+      <label for="name">Name</label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        autocomplete="off"
+        value=""
+        required
+      />
+    </p>
+    <fieldset>
+      <legend>Force</legend>
+      <div>
+          <input
+            type="radio"
+            id="force_Pull"
+            name="force"
+            autocomplete="off"
+            value="0"
+            checked
+          />
+          <label for="force_Pull">Pull</label>
+        </div><div>
+          <input
+            type="radio"
+            id="force_Push"
+            name="force"
+            autocomplete="off"
+            value="1"
+            
+          />
+          <label for="force_Push">Push</label>
+        </div><div>
+          <input
+            type="radio"
+            id="force_Static"
+            name="force"
+            autocomplete="off"
+            value="2"
+            
+          />
+          <label for="force_Static">Static</label>
+        </div>
+    </fieldset>
+    <fieldset>
+      <legend>Level</legend>
+      <div>
+          <input
+            type="radio"
+            id="level_Easy"
+            name="level"
+            autocomplete="off"
+            value="0"
+            checked
+          />
+          <label for="level_Easy">Easy</label>
+        </div><div>
+          <input
+            type="radio"
+            id="level_Middle"
+            name="level"
+            autocomplete="off"
+            value="1"
+            
+          />
+          <label for="level_Middle">Middle</label>
+        </div><div>
+          <input
+            type="radio"
+            id="level_Hard"
+            name="level"
+            autocomplete="off"
+            value="2"
+            
+          />
+          <label for="level_Hard">Hard</label>
+        </div>
+    </fieldset>
+    <fieldset>
+      <legend>Mechanic</legend>
+      <div>
+          <input
+            type="radio"
+            id="mechanic_Compound"
+            name="mechanic"
+            autocomplete="off"
+            value="0"
+            checked
+          />
+          <label for="mechanic_Compound">Compound</label>
+        </div><div>
+          <input
+            type="radio"
+            id="mechanic_Isolation"
+            name="mechanic"
+            autocomplete="off"
+            value="1"
+            
+          />
+          <label for="mechanic_Isolation">Isolation</label>
+        </div>
+    </fieldset>
+    <fieldset>
+      <legend>Category</legend>
+      <div>
+          <input
+            type="radio"
+            id="category_Endurance"
+            name="category"
+            autocomplete="off"
+            value="0"
+            checked
+          />
+          <label for="category_Endurance">Endurance</label>
+        </div><div>
+          <input
+            type="radio"
+            id="category_Strength"
+            name="category"
+            autocomplete="off"
+            value="1"
+            
+          />
+          <label for="category_Strength">Strength</label>
+        </div><div>
+          <input
+            type="radio"
+            id="category_Stretching"
+            name="category"
+            autocomplete="off"
+            value="2"
+            
+          />
+          <label for="category_Stretching">Stretching</label>
+        </div>
+    </fieldset>
+    <fieldset>
+      <legend>Primary Muscle</legend>
+      <div>
+          <input
+            type="radio"
+            id="primary_Abdominals"
+            name="primary"
+            autocomplete="off"
+            value="0"
+            checked
+          />
+          <label for="primary_Abdominals">Abdominals</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Abductors"
+            name="primary"
+            autocomplete="off"
+            value="1"
+            
+          />
+          <label for="primary_Abductors">Abductors</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Adductors"
+            name="primary"
+            autocomplete="off"
+            value="2"
+            
+          />
+          <label for="primary_Adductors">Adductors</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Biceps"
+            name="primary"
+            autocomplete="off"
+            value="3"
+            
+          />
+          <label for="primary_Biceps">Biceps</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Calves"
+            name="primary"
+            autocomplete="off"
+            value="4"
+            
+          />
+          <label for="primary_Calves">Calves</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Chest"
+            name="primary"
+            autocomplete="off"
+            value="5"
+            
+          />
+          <label for="primary_Chest">Chest</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Forearms"
+            name="primary"
+            autocomplete="off"
+            value="6"
+            
+          />
+          <label for="primary_Forearms">Forearms</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Glutes"
+            name="primary"
+            autocomplete="off"
+            value="7"
+            
+          />
+          <label for="primary_Glutes">Glutes</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Hamstrings"
+            name="primary"
+            autocomplete="off"
+            value="8"
+            
+          />
+          <label for="primary_Hamstrings">Hamstrings</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Lats"
+            name="primary"
+            autocomplete="off"
+            value="9"
+            
+          />
+          <label for="primary_Lats">Lats</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_LowerBack"
+            name="primary"
+            autocomplete="off"
+            value="10"
+            
+          />
+          <label for="primary_LowerBack">LowerBack</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Neck"
+            name="primary"
+            autocomplete="off"
+            value="11"
+            
+          />
+          <label for="primary_Neck">Neck</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Quadriceps"
+            name="primary"
+            autocomplete="off"
+            value="12"
+            
+          />
+          <label for="primary_Quadriceps">Quadriceps</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Shoulders"
+            name="primary"
+            autocomplete="off"
+            value="13"
+            
+          />
+          <label for="primary_Shoulders">Shoulders</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Traps"
+            name="primary"
+            autocomplete="off"
+            value="14"
+            
+          />
+          <label for="primary_Traps">Traps</label>
+        </div><div>
+          <input
+            type="radio"
+            id="primary_Triceps"
+            name="primary"
+            autocomplete="off"
+            value="15"
+            
+          />
+          <label for="primary_Triceps">Triceps</label>
+        </div>
+    </fieldset>
+    <fieldset
+      class="invalid"
+    >
+      <legend>Secondary Muscles</legend>
+      <div>
+          <input
+            type="checkbox"
+            id="secondary_Abdominals"
+            name="secondary"
+            autocomplete="off"
+            value="0"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Abdominals">Abdominals</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Abductors"
+            name="secondary"
+            autocomplete="off"
+            value="1"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Abductors">Abductors</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Adductors"
+            name="secondary"
+            autocomplete="off"
+            value="2"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Adductors">Adductors</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Biceps"
+            name="secondary"
+            autocomplete="off"
+            value="3"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Biceps">Biceps</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Calves"
+            name="secondary"
+            autocomplete="off"
+            value="4"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Calves">Calves</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Chest"
+            name="secondary"
+            autocomplete="off"
+            value="5"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Chest">Chest</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Forearms"
+            name="secondary"
+            autocomplete="off"
+            value="6"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Forearms">Forearms</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Glutes"
+            name="secondary"
+            autocomplete="off"
+            value="7"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Glutes">Glutes</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Hamstrings"
+            name="secondary"
+            autocomplete="off"
+            value="8"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Hamstrings">Hamstrings</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Lats"
+            name="secondary"
+            autocomplete="off"
+            value="9"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Lats">Lats</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_LowerBack"
+            name="secondary"
+            autocomplete="off"
+            value="10"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_LowerBack">LowerBack</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Neck"
+            name="secondary"
+            autocomplete="off"
+            value="11"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Neck">Neck</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Quadriceps"
+            name="secondary"
+            autocomplete="off"
+            value="12"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Quadriceps">Quadriceps</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Shoulders"
+            name="secondary"
+            autocomplete="off"
+            value="13"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Shoulders">Shoulders</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Traps"
+            name="secondary"
+            autocomplete="off"
+            value="14"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Traps">Traps</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="secondary_Triceps"
+            name="secondary"
+            autocomplete="off"
+            value="15"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="secondary_Triceps">Triceps</label>
+        </div>
+    </fieldset>
+    <fieldset
+      class="invalid"
+    >
+      <legend>Equipment</legend>
+      <div>
+          <input
+            type="checkbox"
+            id="equipment_Bands"
+            name="equipment"
+            autocomplete="off"
+            value="0"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="equipment_Bands">Bands</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="equipment_Barbell"
+            name="equipment"
+            autocomplete="off"
+            value="1"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="equipment_Barbell">Barbell</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="equipment_Bench"
+            name="equipment"
+            autocomplete="off"
+            value="2"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="equipment_Bench">Bench</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="equipment_Body"
+            name="equipment"
+            autocomplete="off"
+            value="3"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="equipment_Body">Body</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="equipment_Cable"
+            name="equipment"
+            autocomplete="off"
+            value="4"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="equipment_Cable">Cable</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="equipment_Dumbbells"
+            name="equipment"
+            autocomplete="off"
+            value="5"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="equipment_Dumbbells">Dumbbells</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="equipment_Kettlebells"
+            name="equipment"
+            autocomplete="off"
+            value="6"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="equipment_Kettlebells">Kettlebells</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="equipment_Machine"
+            name="equipment"
+            autocomplete="off"
+            value="7"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="equipment_Machine">Machine</label>
+        </div><div>
+          <input
+            type="checkbox"
+            id="equipment_Other"
+            name="equipment"
+            autocomplete="off"
+            value="8"
+            hx-headers='{"X-Validation-Only": "true"}'
+            hx-post="/exercise/validate"
+            
+          />
+          <label for="equipment_Other">Other</label>
+        </div>
+    </fieldset>
+    <p>
+      
+      <textarea
+        id="instructions"
+        name="instructions"
+        autocomplete="off"
+        rows="15"
+        cols="80"
+        placeholder="Instructions"
+        required
+      ></textarea>
+    </p>
+    <p>
+      <label for="images">Images</label>
+      <input
+        type="file"
+        id="images"
+        name="images"
+        autocomplete="off"
+        multiple
+        hx-preserve
+      />
+    </p>
+    <p>
+      <button type="submit">Create</button>
+    </p>
+  </form>
+</div>
+
+    </div>
+  </body>
+</html>

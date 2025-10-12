@@ -5,9 +5,10 @@ test:
 	go tool cover -html cover.out
 
 db:
-	docker volume create pgdata || true; docker run --rm -it \
+	docker volume create workout-tracker
+	docker run --rm -it \
 		-p 5432:5432 \
-		-v pgdata:/var/lib/postgresql/data \
+		-v workout-tracker:/var/lib/postgresql/data \
 		-e POSTGRES_PASSWORD=postgres \
 		postgres:17.6
 

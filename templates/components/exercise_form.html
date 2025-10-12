@@ -18,7 +18,7 @@
     </p>
     <fieldset>
       <legend>Force</legend>
-      {{ range $idx, $force := .Data.PossibleValues.Forces }}
+      {{ range $idx, $force := .Data.PossibleValues.Forces -}}
         <div>
           <input
             type="radio"
@@ -26,19 +26,15 @@
             name="force"
             autocomplete="off"
             value="{{ $idx }}"
-            {{ if eq
-              $force $.Data.Input.Force
-            }}
-              checked
-            {{ end }}
+            {{ if eq $force $.Data.Input.Force -}}checked{{- end }}
           />
           <label for="force_{{ $force }}">{{ $force }}</label>
         </div>
-      {{ end }}
+      {{- end }}
     </fieldset>
     <fieldset>
       <legend>Level</legend>
-      {{ range $idx, $level := .Data.PossibleValues.Levels }}
+      {{ range $idx, $level := .Data.PossibleValues.Levels -}}
         <div>
           <input
             type="radio"
@@ -46,19 +42,15 @@
             name="level"
             autocomplete="off"
             value="{{ $idx }}"
-            {{ if eq
-              $level $.Data.Input.Level
-            }}
-              checked
-            {{ end }}
+            {{ if eq $level $.Data.Input.Level -}}checked{{- end }}
           />
           <label for="level_{{ $level }}">{{ $level }}</label>
         </div>
-      {{ end }}
+      {{- end }}
     </fieldset>
     <fieldset>
       <legend>Mechanic</legend>
-      {{ range $idx, $mechanic := .Data.PossibleValues.Mechanics }}
+      {{ range $idx, $mechanic := .Data.PossibleValues.Mechanics -}}
         <div>
           <input
             type="radio"
@@ -66,15 +58,15 @@
             name="mechanic"
             autocomplete="off"
             value="{{ $idx }}"
-            {{ if eq $mechanic $.Data.Input.Mechanic }}checked{{ end }}
+            {{ if eq $mechanic $.Data.Input.Mechanic -}}checked{{- end }}
           />
           <label for="mechanic_{{ $mechanic }}">{{ $mechanic }}</label>
         </div>
-      {{ end }}
+      {{- end }}
     </fieldset>
     <fieldset>
       <legend>Category</legend>
-      {{ range $idx, $category := .Data.PossibleValues.Categories }}
+      {{ range $idx, $category := .Data.PossibleValues.Categories -}}
         <div>
           <input
             type="radio"
@@ -82,15 +74,15 @@
             name="category"
             autocomplete="off"
             value="{{ $idx }}"
-            {{ if eq $category $.Data.Input.Category }}checked{{ end }}
+            {{ if eq $category $.Data.Input.Category -}}checked{{- end }}
           />
           <label for="category_{{ $category }}">{{ $category }}</label>
         </div>
-      {{ end }}
+      {{- end }}
     </fieldset>
     <fieldset>
       <legend>Primary Muscle</legend>
-      {{ range $idx, $muscle := .Data.PossibleValues.Muscles }}
+      {{ range $idx, $muscle := .Data.PossibleValues.Muscles -}}
         <div>
           <input
             type="radio"
@@ -98,11 +90,11 @@
             name="primary"
             autocomplete="off"
             value="{{ $idx }}"
-            {{ if eq $muscle $.Data.Input.PrimaryMuscle }}checked{{ end }}
+            {{ if eq $muscle $.Data.Input.PrimaryMuscle -}}checked{{- end }}
           />
           <label for="primary_{{ $muscle }}">{{ $muscle }}</label>
         </div>
-      {{ end }}
+      {{- end }}
     </fieldset>
     <fieldset
       class="{{- if eq (len .Data.Input.SecondaryMuscles) 0 -}}
@@ -112,7 +104,7 @@
       {{- end -}}"
     >
       <legend>Secondary Muscles</legend>
-      {{ range $idx, $muscle := .Data.PossibleValues.Muscles }}
+      {{ range $idx, $muscle := .Data.PossibleValues.Muscles -}}
         <div>
           <input
             type="checkbox"
@@ -122,15 +114,15 @@
             value="{{ $idx }}"
             hx-headers='{"X-Validation-Only": "true"}'
             {{ $.Data.ValidationLink }}
-            {{- range
+            {{ range
               $inputMuscle :=$.Data.Input.SecondaryMuscles
             -}}
-              {{ if eq $inputMuscle $muscle }}checked{{ end }}
+              {{- if eq $inputMuscle $muscle -}}checked{{- end -}}
             {{- end }}
           />
           <label for="secondary_{{ $muscle }}">{{ $muscle }}</label>
         </div>
-      {{ end }}
+      {{- end }}
     </fieldset>
     <fieldset
       class="{{- if eq (len .Data.Input.Equipment) 0 -}}
@@ -140,7 +132,7 @@
       {{- end -}}"
     >
       <legend>Equipment</legend>
-      {{ range $idx, $equipment := .Data.PossibleValues.Equipment }}
+      {{ range $idx, $equipment := .Data.PossibleValues.Equipment -}}
         <div>
           <input
             type="checkbox"
@@ -150,15 +142,15 @@
             value="{{ $idx }}"
             hx-headers='{"X-Validation-Only": "true"}'
             {{ $.Data.ValidationLink }}
-            {{- range
+            {{ range
               $inputEquipment :=$.Data.Input.Equipment
             -}}
-              {{ if eq $inputEquipment $equipment }}checked{{ end }}
+              {{- if eq $inputEquipment $equipment -}}checked{{- end -}}
             {{- end }}
           />
           <label for="equipment_{{ $equipment }}">{{ $equipment }}</label>
         </div>
-      {{ end }}
+      {{- end }}
     </fieldset>
     <p>
       <!-- prettier-ignore -->
