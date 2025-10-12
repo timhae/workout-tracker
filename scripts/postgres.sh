@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
+docker volume create pgdata || true
 docker run --rm -it \
     -p 5432:5432 \
-    -v $PWD/docker:/var/lib/postgresql/data \
-    -e PGDATA=/var/lib/postgresql/data/pgdata \
-    -e POSTGRES_PASSWORD=postgres postgres:17.6
+    -v pgdata:/var/lib/postgresql/data \
+    -e POSTGRES_PASSWORD=postgres \
+    postgres:17.6

@@ -2,11 +2,7 @@
   {{ with $err := .Data.Error }}<p>{{ $err }}</p>{{ end }}
   <form
     hx-encoding="multipart/form-data"
-    hx-{{- with $id := .Data.ID -}}
-      put
-    {{- else -}}
-      post
-    {{- end -}}="/exercise{{ with $id := .Data.ID }}/{{ $id }}{{ end }}"
+    {{ .Data.ValidationLink }}
     hx-target="#content"
   >
     <p>
@@ -30,7 +26,11 @@
             name="force"
             autocomplete="off"
             value="{{ $idx }}"
-            {{ if eq $force $.Data.Input.Force }}checked{{ end }}
+            {{ if eq
+              $force $.Data.Input.Force
+            }}
+              checked
+            {{ end }}
           />
           <label for="force_{{ $force }}">{{ $force }}</label>
         </div>
@@ -46,7 +46,11 @@
             name="level"
             autocomplete="off"
             value="{{ $idx }}"
-            {{ if eq $level $.Data.Input.Level }}checked{{ end }}
+            {{ if eq
+              $level $.Data.Input.Level
+            }}
+              checked
+            {{ end }}
           />
           <label for="level_{{ $level }}">{{ $level }}</label>
         </div>
@@ -101,11 +105,11 @@
       {{ end }}
     </fieldset>
     <fieldset
-      class="{{ if eq (len .Data.Input.SecondaryMuscles) 0 }}
+      class="{{- if eq (len .Data.Input.SecondaryMuscles) 0 -}}
         invalid
-      {{ else }}
+      {{- else -}}
         valid
-      {{ end }}"
+      {{- end -}}"
     >
       <legend>Secondary Muscles</legend>
       {{ range $idx, $muscle := .Data.PossibleValues.Muscles }}
@@ -116,28 +120,24 @@
             name="secondary"
             autocomplete="off"
             value="{{ $idx }}"
-            hx-{{- with $id := $.Data.ID -}}
-              put
-            {{- else -}}
-              post
-            {{- end -}}="/exercise{{ with $id := $.Data.ID -}}
-              /{{- $id -}}
-            {{- end -}}"
-            hx-headers='{"X-Validation": "true"}'
-            {{- range $inputMuscle :=$.Data.Input.SecondaryMuscles -}}
+            hx-headers='{"X-Validation-Only": "true"}'
+            {{ $.Data.ValidationLink }}
+            {{- range
+              $inputMuscle :=$.Data.Input.SecondaryMuscles
+            -}}
               {{ if eq $inputMuscle $muscle }}checked{{ end }}
-            {{- end -}}
+            {{- end }}
           />
           <label for="secondary_{{ $muscle }}">{{ $muscle }}</label>
         </div>
       {{ end }}
     </fieldset>
     <fieldset
-      class="{{ if eq (len .Data.Input.Equipment) 0 }}
+      class="{{- if eq (len .Data.Input.Equipment) 0 -}}
         invalid
-      {{ else }}
+      {{- else -}}
         valid
-      {{ end }}"
+      {{- end -}}"
     >
       <legend>Equipment</legend>
       {{ range $idx, $equipment := .Data.PossibleValues.Equipment }}
@@ -148,17 +148,13 @@
             name="equipment"
             autocomplete="off"
             value="{{ $idx }}"
-            hx-{{- with $id := $.Data.ID -}}
-              put
-            {{- else -}}
-              post
-            {{- end -}}="/exercise{{ with $id := $.Data.ID -}}
-              /{{- $id -}}
-            {{- end -}}"
-            hx-headers='{"X-Validation": "true"}'
-            {{- range $inputEquipment :=$.Data.Input.Equipment -}}
+            hx-headers='{"X-Validation-Only": "true"}'
+            {{ $.Data.ValidationLink }}
+            {{- range
+              $inputEquipment :=$.Data.Input.Equipment
+            -}}
               {{ if eq $inputEquipment $equipment }}checked{{ end }}
-            {{- end -}}
+            {{- end }}
           />
           <label for="equipment_{{ $equipment }}">{{ $equipment }}</label>
         </div>
@@ -188,13 +184,7 @@
       />
     </p>
     <p>
-      <button type="submit">
-        {{ if .Data.ID }}
-          Update
-        {{ else }}
-          Create
-        {{ end }}
-      </button>
+      <button type="submit">{{ .Data.Button }}</button>
     </p>
   </form>
 </div>

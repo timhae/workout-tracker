@@ -2,7 +2,16 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
+	"html/template"
+	"log"
+	"strconv"
 	"time"
+
+	"github.com/donseba/go-htmx"
+	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"gorm.io/gorm"
 )
 
 type Exercise struct {
@@ -17,8 +26,8 @@ type Exercise struct {
 	PrimaryMuscle    Muscle      `form:"primary" binding:"number,gte=0"`
 	SecondaryMuscles []Muscle    `form:"secondary" binding:"required" gorm:"type:jsonb;serializer:json"`
 	Equipment        []Equipment `form:"equipment" binding:"required" gorm:"type:jsonb;serializer:json"`
-	Instructions     string      `form:"instructions" binding:"required"`
-	Images           string
+	Instructions     string      `form:"instructions" binding:"required" gorm:"type:text"`
+	Images           []string    `gorm:"type:jsonb;serializer:json"`
 }
 
 type Force uint
@@ -201,4 +210,172 @@ func (m *Muscle) UnmarshalJSON(data []byte) error {
 	}
 	*m = Muscle(v)
 	return nil
+}
+
+var (
+	possibleValues = map[string]any{
+		"Forces":     allValues[Force](uint(_ForceCount)),
+		"Levels":     allValues[Level](uint(_LevelCount)),
+		"Mechanics":  allValues[Mechanic](uint(_MechanicCount)),
+		"Categories": allValues[Category](uint(_CategoryCount)),
+		"Muscles":    allValues[Muscle](uint(_MuscleCount)),
+		"Equipment":  allValues[Equipment](uint(_EquipmentCount)),
+	}
+)
+
+func (a *App) ListExercises(c *gin.Context) {
+	var exercises []Exercise
+	exercises, err := gorm.G[Exercise](a.db).Order("id").Find(*a.ctx)
+	if err != nil {
+		log.Printf("error fetching exercises: %v", err)
+	}
+
+	data := map[string]any{
+		"Exercises": exercises,
+		"Columns": []string{
+			"Action", "Name", "Force", "Level", "Mechanic", "Category", "Primary", "Secondary", "Equipment", "Instructions", "Images",
+		},
+	}
+	page := htmx.NewComponent("templates/pages/exercises.html").SetData(data).Wrap(mainContent(), "Content")
+	a.render(c, &page)
+}
+
+func (a *App) CreateExercise(c *gin.Context) {
+	data := map[string]any{
+		"PossibleValues": possibleValues,
+		"ValidationLink": template.HTMLAttr(`hx-post="/exercise/validate"`),
+		"Input":          Exercise{},
+		"Button":         "Create",
+	}
+	page := htmx.NewComponent("templates/components/exercise_form.html").SetData(data).Wrap(mainContent(), "Content")
+	a.render(c, &page)
+}
+
+func (a *App) ReadExercise(c *gin.Context) {
+	id := c.Param("id")
+	exercise, err := gorm.G[Exercise](a.db).Where("id = ?", id).First(*a.ctx)
+	if err != nil {
+		log.Printf("error reading exercise: %v", err)
+	} else {
+		err = errors.New("")
+	}
+
+	data := map[string]any{
+		"PossibleValues": possibleValues,
+		"ValidationLink": template.HTMLAttr(`hx-post="/exercise/` + id + `/validate"`),
+		"Input":          exercise,
+		"Error":          err.Error(),
+		"Button":         "Update",
+	}
+	page := htmx.NewComponent("templates/components/exercise_form.html").SetData(data).Wrap(mainContent(), "Content")
+	a.render(c, &page)
+}
+
+func (a *App) DeleteExercise(c *gin.Context) {
+	_, err := gorm.G[Exercise](a.db).Where("id = ?", c.Param("id")).Delete(*a.ctx)
+	if err != nil {
+		log.Printf("error deleting exercise: %v", err)
+	}
+	a.ListExercises(c)
+}
+
+func (a *App) ValidateExercise(c *gin.Context) {
+	var err error
+	var exercise Exercise
+	button := "Create"
+	validationLink := `hx-post="/exercise/validate"`
+	validationRequest := c.Request.Header.Get("X-Validation-Only") == "true"
+	id := c.Param("id")
+
+	if err = c.ShouldBindWith(&exercise, binding.Form); err != nil {
+		log.Printf("input err: %v+", err)
+	} else if !validationRequest {
+		err = a.insertExercise(id, c, &exercise)
+	}
+
+	if err == nil {
+		if !validationRequest {
+			c.Header("HX-Location", `{"path":"/exercise/list", "target":"#content"}`)
+			return
+		} else {
+			err = errors.New("")
+		}
+	}
+
+	if id != "" {
+		button = "Update"
+		validationLink = `hx-post="/exercise/` + id + `/validate"`
+	}
+
+	data := map[string]any{
+		"PossibleValues": possibleValues,
+		"ValidationLink": template.HTMLAttr(validationLink),
+		"Input":          exercise,
+		"Error":          err.Error(),
+		"Button":         button,
+	}
+	page := htmx.NewComponent("templates/components/exercise_form.html").SetData(data).Wrap(mainContent(), "Content")
+	a.render(c, &page)
+}
+
+func (a *App) insertExercise(id string, c *gin.Context, exercise *Exercise) error {
+	var err error
+	var fileNames []string
+	var count int64
+
+	if id != "" { // updating existing entry
+		fileNames, err = saveImages(exercise.Name, c)
+		if err != nil {
+			log.Printf("file upload err: %v+", err)
+			return err
+		}
+		exercise.Images = fileNames
+		_, err = gorm.G[Exercise](a.db).Where("id = ?", c.Param("id")).Updates(*a.ctx, *exercise)
+		if err != nil {
+			log.Printf("db err: %v+", err)
+			return err
+		}
+	} else { // creating new entry
+		count, err = gorm.G[Exercise](a.db).Where("name = ?", exercise.Name).Count(*a.ctx, "name")
+		if err != nil {
+			return err
+		}
+		if count > 0 {
+			return errors.New("exercise with name '" + exercise.Name + "' already exists")
+		}
+		fileNames, err = saveImages(exercise.Name, c)
+		if err != nil {
+			log.Printf("file upload err: %v+", err)
+			return err
+		}
+		exercise.Images = fileNames
+		err = gorm.G[Exercise](a.db).Create(*a.ctx, exercise)
+		if err != nil {
+			log.Printf("db err: %v+", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func saveImages(name string, c *gin.Context) ([]string, error) {
+	form, err := c.MultipartForm()
+	if err != nil {
+		return nil, err
+	}
+	files := form.File["images"]
+	fileNames := []string{}
+
+	for idx, file := range files {
+		fileName := name + "_" + strconv.Itoa(idx)
+		log.Printf("saving file %s as %s", file.Filename, fileName)
+		err := c.SaveUploadedFile(file, "./static/images/"+fileName)
+		if err != nil {
+			return nil, err
+		}
+		fileNames = append(fileNames, fileName)
+	}
+
+	return fileNames, nil
 }

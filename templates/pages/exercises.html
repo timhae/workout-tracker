@@ -11,9 +11,10 @@
     <tbody>
       {{ range $exercise := .Data.Exercises -}}
         <tr>
-          <td><a href="/exercise/{{ $exercise.ID }}">{{ $exercise.ID }}</a></td>
           <td><button hx-delete="/exercise/{{ $exercise.ID }}">Del</button></td>
-          <td>{{ $exercise.Name }}</td>
+          <td>
+            <a href="/exercise/{{ $exercise.ID }}">{{ $exercise.Name }}</a>
+          </td>
           <td>{{ $exercise.Force }}</td>
           <td>{{ $exercise.Level }}</td>
           <td>{{ $exercise.Mechanic }}</td>
