@@ -4,10 +4,11 @@
 
 pkgs.mkShell {
   buildInputs = with pkgs; [
+    fd
     go
     gopls
-    inotify-tools
     nodejs_24
     postgresql_17
+    wgo
   ];
 }

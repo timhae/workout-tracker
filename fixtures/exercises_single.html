@@ -10,7 +10,7 @@
 
   <body>
     <div>
-      <div hx-boost="true" hx-target="#content"><a href="/workouts">Workouts</a><a href="/plans">Plans</a><a href="/measurements">Measurements</a><a href="/exercises">Exercises</a></div>
+      <div hx-boost="true" hx-target="#content"><a href="/workout/list">Workouts</a><a href="/plan/list">Plans</a><a href="/measurement/list">Measurements</a><a href="/exercise/list">Exercises</a></div>
 
     </div>
     <div id="content">
@@ -19,13 +19,14 @@
   <table>
     <thead>
       <tr>
-        <th>ID</th><th>Delete</th><th>Name</th><th>Force</th><th>Level</th><th>Mechanic</th><th>Category</th><th>Primary</th><th>Secondary</th><th>Equipment</th><th>Instructions</th><th>Images</th>
+        <th>Action</th><th>Name</th><th>Force</th><th>Level</th><th>Mechanic</th><th>Category</th><th>Primary</th><th>Secondary</th><th>Equipment</th><th>Instructions</th><th>Images</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-          <td><a href="/exercise/1">1</a></td>
-          <td><button hx-delete="/exercise/1">Del</button></td>
+          <td>
+            <button hx-delete="/exercise/1" hx-confirm="Delete exercise?">Del</button><button hx-get="/exercise/1">Edit</button>
+          </td>
           <td>fff</td>
           <td>Pull</td>
           <td>Easy</td>
@@ -35,7 +36,7 @@
           <td>[Chest]</td>
           <td>[Other]</td>
           <td>asf</td>
-          <td>PXL_20221129_202949801.jpg;PXL_20221129_203004190.jpg;</td>
+          <td>[fff_0 fff_1]</td>
         </tr>
     </tbody>
   </table>

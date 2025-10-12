@@ -33,3 +33,4 @@ go.work.sum
 node_modules/
 docker/
 static/images/
+cover.out

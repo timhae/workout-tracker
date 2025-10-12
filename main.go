@@ -7,7 +7,6 @@ import (
 
 	"github.com/donseba/go-htmx"
 	"github.com/gin-gonic/gin"
-	// "github.com/gin-gonic/gin/binding"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -96,7 +95,7 @@ func mainContent() htmx.RenderableComponent {
 			Name string
 			Link string
 		}{
-			{"ListWorkouts", "/workout/list"},
+			{"Workouts", "/workout/list"},
 			{"Plans", "/plan/list"},
 			{"Measurements", "/measurement/list"},
 			{"Exercises", "/exercise/list"},

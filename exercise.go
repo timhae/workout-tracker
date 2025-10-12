@@ -235,8 +235,9 @@ func (a *App) ListExercises(c *gin.Context) {
 		"Columns": []string{
 			"Action", "Name", "Force", "Level", "Mechanic", "Category", "Primary", "Secondary", "Equipment", "Instructions", "Images",
 		},
+		"Actions": []string{"Del", "Edit"},
 	}
-	page := htmx.NewComponent("templates/pages/exercises.html").SetData(data).Wrap(mainContent(), "Content")
+	page := htmx.NewComponent("templates/pages/exercises.html").SetData(data).Wrap(mainContent(), "Content").AddTemplateFunction("exerciseAction", exerciseAction)
 	a.render(c, &page)
 }
 
@@ -378,4 +379,15 @@ func saveImages(name string, c *gin.Context) ([]string, error) {
 	}
 
 	return fileNames, nil
+}
+
+func exerciseAction(action string, id uint) any {
+	switch action {
+	case "Del":
+		return template.HTML(`<button hx-delete="/exercise/` + strconv.FormatUint(uint64(id), 10) + `" hx-confirm="Delete exercise?">Del</button>`)
+	case "Edit":
+		return template.HTML(`<button hx-get="/exercise/` + strconv.FormatUint(uint64(id), 10) + `">Edit</button>`)
+	default:
+		return ""
+	}
 }
