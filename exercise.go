@@ -292,6 +292,7 @@ func (a *App) ValidateExercise(c *gin.Context) {
 		log.Printf("input err: %v+", err)
 	} else if !validationRequest {
 		err = a.insertExercise(id, c, &exercise)
+		log.Printf("insert err: %v+", err)
 	}
 
 	if err == nil {
