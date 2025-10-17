@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"mime/multipart"
 	"net/http"
 
 	"github.com/donseba/go-htmx"
@@ -11,10 +12,15 @@ import (
 	"gorm.io/gorm"
 )
 
+type FileSaver interface {
+	SaveUploadedFile(file *multipart.FileHeader, dst string) error
+}
+
 type App struct {
-	htmx *htmx.HTMX
-	db   *gorm.DB
-	ctx  *context.Context
+	htmx      *htmx.HTMX
+	db        *gorm.DB
+	ctx       *context.Context
+	fileSaver FileSaver
 }
 
 func main() {
@@ -35,26 +41,33 @@ func main() {
 		ctx:  &ctx,
 	}
 
+	router := app.setupRouter(gin.DebugMode)
+	err = router.Run(":8080")
+	log.Fatal(err)
+}
+
+func (a *App) setupRouter(mode string) *gin.Engine {
+	gin.SetMode(mode)
+
 	router := gin.Default()
 	router.SetTrustedProxies(nil)
 	router.Static("/static", "./static")
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/workout/list")
 	})
-	router.GET("/workout/list", app.ListWorkouts)
-	router.GET("/plan/list", app.ListPlans)
-	router.GET("/measurement/list", app.ListMeasurements)
+	router.GET("/workout/list", a.ListWorkouts)
+	router.GET("/plan/list", a.ListPlans)
+	router.GET("/measurement/list", a.ListMeasurements)
 
 	ex := router.Group("/exercise")
-	ex.GET("/list", app.ListExercises)
-	ex.GET("", app.CreateExercise)
-	ex.POST("/validate", app.ValidateExercise)
-	ex.GET("/:id", app.ReadExercise)
-	ex.DELETE("/:id", app.DeleteExercise)
-	ex.POST("/:id/validate", app.ValidateExercise)
+	ex.GET("/list", a.ListExercises)
+	ex.GET("", a.CreateExercise)
+	ex.POST("/validate", a.ValidateExercise)
+	ex.GET("/:id", a.ReadExercise)
+	ex.DELETE("/:id", a.DeleteExercise)
+	ex.POST("/:id/validate", a.ValidateExercise)
 
-	err = router.Run(":8080")
-	log.Fatal(err)
+	return router
 }
 
 func (a *App) ListWorkouts(c *gin.Context) {

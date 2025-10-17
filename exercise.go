@@ -292,7 +292,9 @@ func (a *App) ValidateExercise(c *gin.Context) {
 		log.Printf("input err: %v+", err)
 	} else if !validationRequest {
 		err = a.insertExercise(id, c, &exercise)
-		log.Printf("insert err: %v+", err)
+		if err != nil {
+			log.Printf("insert err: %v+", err)
+		}
 	}
 
 	if err == nil {
@@ -321,47 +323,40 @@ func (a *App) ValidateExercise(c *gin.Context) {
 }
 
 func (a *App) insertExercise(id string, c *gin.Context, exercise *Exercise) error {
-	var err error
 	var fileNames []string
-	var count int64
 
-	if id != "" { // updating existing entry
-		fileNames, err = saveImages(exercise.Name, c)
-		if err != nil {
-			log.Printf("file upload err: %v+", err)
-			return err
-		}
-		exercise.Images = fileNames
-		_, err = gorm.G[Exercise](a.db).Where("id = ?", c.Param("id")).Updates(*a.ctx, *exercise)
-		if err != nil {
-			log.Printf("db err: %v+", err)
-			return err
-		}
-	} else { // creating new entry
-		count, err = gorm.G[Exercise](a.db).Where("name = ?", exercise.Name).Count(*a.ctx, "name")
+	if id == "" {
+		count, err := gorm.G[Exercise](a.db).Where("name = ?", exercise.Name).Count(*a.ctx, "name")
 		if err != nil {
 			return err
 		}
 		if count > 0 {
 			return errors.New("exercise with name '" + exercise.Name + "' already exists")
 		}
-		fileNames, err = saveImages(exercise.Name, c)
-		if err != nil {
-			log.Printf("file upload err: %v+", err)
-			return err
-		}
-		exercise.Images = fileNames
+	}
+
+	fileNames, err := a.saveImages(exercise.Name, c)
+	if err != nil {
+		log.Printf("file upload err: %v+", err)
+		return err
+	}
+	exercise.Images = fileNames
+
+	if id != "" {
+		_, err = gorm.G[Exercise](a.db).Where("id = ?", c.Param("id")).Updates(*a.ctx, *exercise)
+	} else {
 		err = gorm.G[Exercise](a.db).Create(*a.ctx, exercise)
-		if err != nil {
-			log.Printf("db err: %v+", err)
-			return err
-		}
+	}
+	if err != nil {
+		log.Printf("db err: %v+", err)
+		return err
 	}
 
 	return nil
 }
 
-func saveImages(name string, c *gin.Context) ([]string, error) {
+func (a *App) saveImages(name string, c *gin.Context) ([]string, error) {
+	var err error
 	form, err := c.MultipartForm()
 	if err != nil {
 		return nil, err
@@ -372,7 +367,11 @@ func saveImages(name string, c *gin.Context) ([]string, error) {
 	for idx, file := range files {
 		fileName := name + "_" + strconv.Itoa(idx)
 		log.Printf("saving file %s as %s", file.Filename, fileName)
-		err := c.SaveUploadedFile(file, "./static/images/"+fileName)
+		if a.fileSaver != nil {
+			err = a.fileSaver.SaveUploadedFile(file, "./static/images/"+fileName)
+		} else {
+			err = c.SaveUploadedFile(file, "./static/images/"+fileName)
+		}
 		if err != nil {
 			return nil, err
 		}
