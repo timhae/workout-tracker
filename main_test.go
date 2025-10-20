@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,21 +11,11 @@ import (
 	"github.com/donseba/go-htmx"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-type mockFileSaver struct {
-	mock.Mock
-}
-
-func (m *mockFileSaver) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
-	args := m.Called(file, dst)
-	return args.Error(0)
-}
-
-func SetupTestApp() *gin.Engine {
+func SetupTestApp() (*gin.Engine, *App) {
 	var mockDb *sql.DB
 	mockDb, mocksql, _ = sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	db, _ := gorm.Open(postgres.New(postgres.Config{
@@ -35,17 +24,17 @@ func SetupTestApp() *gin.Engine {
 	}), &gorm.Config{})
 	ctx := context.Background()
 	app := &App{
-		htmx:      htmx.New(),
-		db:        db,
-		ctx:       &ctx,
-		fileSaver: &mockFileSaver{},
+		htmx:   htmx.New(),
+		db:     db,
+		ctx:    &ctx,
+		mockFS: &mockFS{},
 	}
 	router := app.setupRouter(gin.TestMode)
-	return router
+	return router, app
 }
 
 func TestHomeRedirect(t *testing.T) {
-	router := SetupTestApp()
+	router, _ := SetupTestApp()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/", nil)

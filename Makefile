@@ -1,7 +1,7 @@
 .PHONY: test db dev
 
 test:
-	go test -v -cover -test.coverprofile cover.out
+	go test -v -shuffle=on -cover -coverprofile=cover.out
 	go tool cover -html cover.out
 
 db:

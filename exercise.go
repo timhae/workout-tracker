@@ -328,6 +328,7 @@ func (a *App) insertExercise(id string, c *gin.Context, exercise *Exercise) erro
 	if id == "" {
 		count, err := gorm.G[Exercise](a.db).Where("name = ?", exercise.Name).Count(*a.ctx, "name")
 		if err != nil {
+			log.Printf("db err: %v+", err)
 			return err
 		}
 		if count > 0 {
@@ -366,9 +367,9 @@ func (a *App) saveImages(name string, c *gin.Context) ([]string, error) {
 
 	for idx, file := range files {
 		fileName := name + "_" + strconv.Itoa(idx)
-		log.Printf("saving file %s as %s", file.Filename, fileName)
-		if a.fileSaver != nil {
-			err = a.fileSaver.SaveUploadedFile(file, "./static/images/"+fileName)
+		log.Printf("saving file %s as ./static/images/%s", file.Filename, fileName)
+		if a.mockFS != nil {
+			err = a.mockFS.SaveUploadedFile(file, "./static/images/"+fileName)
 		} else {
 			err = c.SaveUploadedFile(file, "./static/images/"+fileName)
 		}

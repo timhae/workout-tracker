@@ -8,19 +8,26 @@ import (
 
 	"github.com/donseba/go-htmx"
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/mock"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-type FileSaver interface {
-	SaveUploadedFile(file *multipart.FileHeader, dst string) error
+type mockFS struct {
+	mock.Mock
+}
+
+func (m *mockFS) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
+	log.Printf("mock saving file %s as %s", file.Filename, dst)
+	args := m.Called(file, dst)
+	return args.Error(0)
 }
 
 type App struct {
-	htmx      *htmx.HTMX
-	db        *gorm.DB
-	ctx       *context.Context
-	fileSaver FileSaver
+	htmx   *htmx.HTMX
+	db     *gorm.DB
+	ctx    *context.Context
+	mockFS *mockFS
 }
 
 func main() {
