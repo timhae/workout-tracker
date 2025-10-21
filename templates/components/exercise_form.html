@@ -5,17 +5,18 @@
     {{ .Data.ValidationLink }}
     hx-target="#content"
   >
-    <p>
-      <label for="name">Name</label>
+    <fieldset>
+      <legend for="name">Name</legend>
       <input
         type="text"
         id="name"
         name="name"
         autocomplete="off"
         value="{{ .Data.Input.Name }}"
+        {{ if eq .Data.Button "Update" }}readonly{{ end }}
         required
       />
-    </p>
+    </fieldset>
     <fieldset>
       <legend>Force</legend>
       {{ range $idx, $force := .Data.PossibleValues.Forces -}}
@@ -152,7 +153,8 @@
         </div>
       {{- end }}
     </fieldset>
-    <p>
+    <fieldset>
+      <legend for="instructions">Instructions</legend>
       <!-- prettier-ignore -->
       <textarea
         id="instructions"
@@ -160,12 +162,11 @@
         autocomplete="off"
         rows="15"
         cols="80"
-        placeholder="Instructions"
         required
       >{{ .Data.Input.Instructions }}</textarea>
-    </p>
-    <p>
-      <label for="images">Images</label>
+    </fieldset>
+    <fieldset>
+      <legend for="images">Images</legend>
       <input
         type="file"
         id="images"
@@ -174,7 +175,7 @@
         multiple
         hx-preserve
       />
-    </p>
+    </fieldset>
     <p>
       <button type="submit">{{ .Data.Button }}</button>
     </p>

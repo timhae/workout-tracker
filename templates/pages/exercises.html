@@ -1,33 +1,9 @@
 <div hx-boost="true" hx-target="#content">
   <a href="/exercise">create new</a>
-  <table>
-    <thead>
-      <tr>
-        {{ range .Data.Columns -}}
-          <th>{{ . }}</th>
-        {{- end }}
-      </tr>
-    </thead>
-    <tbody>
-      {{ range $exercise := .Data.Exercises -}}
-        <tr>
-          <td>
-            {{ range $action := $.Data.Actions -}}
-              {{ exerciseAction $action $exercise.ID }}
-            {{- end }}
-          </td>
-          <td>{{ $exercise.Name }}</td>
-          <td>{{ $exercise.Force }}</td>
-          <td>{{ $exercise.Level }}</td>
-          <td>{{ $exercise.Mechanic }}</td>
-          <td>{{ $exercise.Category }}</td>
-          <td>{{ $exercise.PrimaryMuscle }}</td>
-          <td>{{ $exercise.SecondaryMuscles }}</td>
-          <td>{{ $exercise.Equipment }}</td>
-          <td>{{ $exercise.Instructions }}</td>
-          <td>{{ $exercise.Images }}</td>
-        </tr>
-      {{- end }}
-    </tbody>
-  </table>
+  <div>
+    {{ .Partials.Filter }}
+  </div>
+  <div>
+    {{ .Partials.Table }}
+  </div>
 </div>

@@ -15,3 +15,14 @@ textarea:valid,
 fieldset.valid {
   box-shadow: 0 0 3px darkgreen;
 }
+
+form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+fieldset {
+  width: max-content;
+}
+

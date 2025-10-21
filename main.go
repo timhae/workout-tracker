@@ -68,6 +68,7 @@ func (a *App) setupRouter(mode string) *gin.Engine {
 
 	ex := router.Group("/exercise")
 	ex.GET("/list", a.ListExercises)
+	ex.POST("/list", a.ListExercisesWithFilter)
 	ex.GET("", a.CreateExercise)
 	ex.POST("/validate", a.ValidateExercise)
 	ex.GET("/:id", a.ReadExercise)
@@ -105,7 +106,7 @@ func (a *App) render(c *gin.Context, page *htmx.RenderableComponent) {
 	htmx := a.htmx.NewHandler(c.Writer, c.Request)
 	_, err := htmx.Render(c.Request.Context(), *page)
 	if err != nil {
-		log.Printf("error rendering page: %v", err.Error())
+		log.Printf("render error: %v", err.Error())
 	}
 }
 

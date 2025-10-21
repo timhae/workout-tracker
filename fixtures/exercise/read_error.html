@@ -21,17 +21,18 @@
     hx-post="/exercise/2/validate"
     hx-target="#content"
   >
-    <p>
-      <label for="name">Name</label>
+    <fieldset>
+      <legend for="name">Name</legend>
       <input
         type="text"
         id="name"
         name="name"
         autocomplete="off"
         value=""
+        readonly
         required
       />
-    </p>
+    </fieldset>
     <fieldset>
       <legend>Force</legend>
       <div>
@@ -634,7 +635,8 @@
           <label for="equipment_Other">Other</label>
         </div>
     </fieldset>
-    <p>
+    <fieldset>
+      <legend for="instructions">Instructions</legend>
       
       <textarea
         id="instructions"
@@ -642,12 +644,11 @@
         autocomplete="off"
         rows="15"
         cols="80"
-        placeholder="Instructions"
         required
       ></textarea>
-    </p>
-    <p>
-      <label for="images">Images</label>
+    </fieldset>
+    <fieldset>
+      <legend for="images">Images</legend>
       <input
         type="file"
         id="images"
@@ -656,7 +657,7 @@
         multiple
         hx-preserve
       />
-    </p>
+    </fieldset>
     <p>
       <button type="submit">Update</button>
     </p>

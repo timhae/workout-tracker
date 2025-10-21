@@ -1,0 +1,133 @@
+<div hx-target="#table">
+  <form hx-encoding="multipart/form-data" hx-post="/exercise/list">
+    <fieldset>
+      <legend for="name">Name</legend>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        hx-post="/exercise/list"
+        hx-trigger="input changed delay:500ms"
+      />
+    </fieldset>
+    <fieldset>
+      <legend>Force</legend>
+      {{ range $idx, $force := .Data.PossibleValues.Forces -}}
+        <div>
+          <input
+            type="checkbox"
+            id="force_{{ $force }}"
+            name="force"
+            autocomplete="off"
+            value="{{ $idx }}"
+            hx-post="/exercise/list"
+            checked
+          />
+          <label for="force_{{ $force }}">{{ $force }}</label>
+        </div>
+      {{- end }}
+    </fieldset>
+    <fieldset>
+      <legend>Level</legend>
+      {{ range $idx, $level := .Data.PossibleValues.Levels -}}
+        <div>
+          <input
+            type="checkbox"
+            id="level_{{ $level }}"
+            name="level"
+            autocomplete="off"
+            value="{{ $idx }}"
+            hx-post="/exercise/list"
+            checked
+          />
+          <label for="level_{{ $level }}">{{ $level }}</label>
+        </div>
+      {{- end }}
+    </fieldset>
+    <fieldset>
+      <legend>Mechanic</legend>
+      {{ range $idx, $mechanic := .Data.PossibleValues.Mechanics -}}
+        <div>
+          <input
+            type="checkbox"
+            id="mechanic_{{ $mechanic }}"
+            name="mechanic"
+            autocomplete="off"
+            value="{{ $idx }}"
+            hx-post="/exercise/list"
+            checked
+          />
+          <label for="mechanic_{{ $mechanic }}">{{ $mechanic }}</label>
+        </div>
+      {{- end }}
+    </fieldset>
+    <fieldset>
+      <legend>Category</legend>
+      {{ range $idx, $category := .Data.PossibleValues.Categories -}}
+        <div>
+          <input
+            type="checkbox"
+            id="category_{{ $category }}"
+            name="category"
+            autocomplete="off"
+            value="{{ $idx }}"
+            hx-post="/exercise/list"
+            checked
+          />
+          <label for="category_{{ $category }}">{{ $category }}</label>
+        </div>
+      {{- end }}
+    </fieldset>
+    <fieldset>
+      <legend>Primary</legend>
+      {{ range $idx, $primary := .Data.PossibleValues.Muscles -}}
+        <div>
+          <input
+            type="checkbox"
+            id="primary_{{ $primary }}"
+            name="primary"
+            autocomplete="off"
+            value="{{ $idx }}"
+            hx-post="/exercise/list"
+            checked
+          />
+          <label for="primary_{{ $primary }}">{{ $primary }}</label>
+        </div>
+      {{- end }}
+    </fieldset>
+    <fieldset>
+      <legend>Secondary</legend>
+      {{ range $idx, $secondary := .Data.PossibleValues.Muscles -}}
+        <div>
+          <input
+            type="checkbox"
+            id="secondary_{{ $secondary }}"
+            name="secondary"
+            autocomplete="off"
+            value="{{ $idx }}"
+            hx-post="/exercise/list"
+            checked
+          />
+          <label for="secondary_{{ $secondary }}">{{ $secondary }}</label>
+        </div>
+      {{- end }}
+    </fieldset>
+    <fieldset>
+      <legend>Equipment</legend>
+      {{ range $idx, $equipment := .Data.PossibleValues.Equipment -}}
+        <div>
+          <input
+            type="checkbox"
+            id="equipment_{{ $equipment }}"
+            name="equipment"
+            autocomplete="off"
+            value="{{ $idx }}"
+            hx-post="/exercise/list"
+            checked
+          />
+          <label for="equipment_{{ $equipment }}">{{ $equipment }}</label>
+        </div>
+      {{- end }}
+    </fieldset>
+  </form>
+</div>

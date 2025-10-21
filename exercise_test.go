@@ -30,15 +30,19 @@ var (
 	t2, _ = time.Parse("2025-10-11 15:08:09.152093+00", "2006-01-02 15:04:05.999999999Z07:00")
 	ex2   = []driver.Value{2, t2, t2, "bla", "1", "1", "1", "1", "8", "[1, 5]",
 		"[2, 8]", "ddd", "[]"}
-	validateFixture = func(t *testing.T, fixture string, w *httptest.ResponseRecorder, a *App) {
+	validateFixture = func(t *testing.T, fixture string, w *httptest.ResponseRecorder) {
 		f, _ := os.ReadFile(fixture)
 		assert.Equal(t, string(f), w.Body.String())
 		// os.WriteFile(fixture, w.Body.Bytes(), 0o644)
+
+		if err := mocksql.ExpectationsWereMet(); err != nil {
+			t.Fatalf("unfulfilled expectations: %v", err)
+		}
 	}
 )
 
 func TestListExercises(t *testing.T) {
-	router, app := SetupTestApp()
+	router, _ := SetupTestApp()
 
 	tests := []struct {
 		dbmocks func()
@@ -83,23 +87,20 @@ func TestListExercises(t *testing.T) {
 			router.ServeHTTP(w, req)
 
 			assert.Equal(t, 200, w.Code)
-			validateFixture(t, tt.fixture, w, app)
-			if err := mocksql.ExpectationsWereMet(); err != nil {
-				t.Fatalf("unfulfilled expectations: %v", err)
-			}
+			validateFixture(t, tt.fixture, w)
 		})
 	}
 }
 
 func TestCreateExercise(t *testing.T) {
-	router, app := SetupTestApp()
+	router, _ := SetupTestApp()
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("GET", "/exercise", nil)
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
-	validateFixture(t, "./fixtures/exercise/form.html", w, app)
+	validateFixture(t, "./fixtures/exercise/form.html", w)
 }
 
 func TestValidateExercise(t *testing.T) {
@@ -109,7 +110,7 @@ func TestValidateExercise(t *testing.T) {
 		dbmocks  func(*App)
 		form     map[string][]string
 		fixture  string
-		validate func(*testing.T, string, *httptest.ResponseRecorder, *App)
+		validate func(*testing.T, string, *httptest.ResponseRecorder)
 	}{
 		{
 			func(a *App) {},
@@ -233,8 +234,11 @@ func TestValidateExercise(t *testing.T) {
 				"instructions": {"test"},
 			},
 			"./nonexistent/validate_valid.html",
-			func(t *testing.T, _ string, w *httptest.ResponseRecorder, a *App) {
+			func(t *testing.T, _ string, w *httptest.ResponseRecorder) {
 				assert.Equal(t, `{"path":"/exercise/list", "target":"#content"}`, w.Result().Header.Get("HX-Location"))
+				if err := mocksql.ExpectationsWereMet(); err != nil {
+					t.Fatalf("unfulfilled expectations: %v", err)
+				}
 			},
 		},
 		{
@@ -260,9 +264,11 @@ func TestValidateExercise(t *testing.T) {
 				"images":       {"img1", "img2"},
 			},
 			"./nonexistent/validate_valid_with_files.html",
-			func(t *testing.T, _ string, w *httptest.ResponseRecorder, a *App) {
+			func(t *testing.T, _ string, w *httptest.ResponseRecorder) {
 				assert.Equal(t, `{"path":"/exercise/list", "target":"#content"}`, w.Result().Header.Get("HX-Location"))
-				a.mockFS.AssertExpectations(t)
+				if err := mocksql.ExpectationsWereMet(); err != nil {
+					t.Fatalf("unfulfilled expectations: %v", err)
+				}
 			},
 		},
 	}
@@ -295,16 +301,14 @@ func TestValidateExercise(t *testing.T) {
 			router.ServeHTTP(w, req)
 
 			assert.Equal(t, 200, w.Code)
-			tt.validate(t, tt.fixture, w, app)
-			if err := mocksql.ExpectationsWereMet(); err != nil {
-				t.Fatalf("unfulfilled expectations: %v", err)
-			}
+			tt.validate(t, tt.fixture, w)
+			app.mockFS.AssertExpectations(t)
 		})
 	}
 }
 
 func TestValidateExerciseWithID(t *testing.T) {
-	router, app := SetupTestApp()
+	router, _ := SetupTestApp()
 
 	var tests = []bool{false, true}
 
@@ -335,19 +339,19 @@ func TestValidateExerciseWithID(t *testing.T) {
 
 			assert.Equal(t, 200, w.Code)
 			if validationOnly {
-				validateFixture(t, "./fixtures/exercise/validate_valid_with_id.html", w, app)
+				validateFixture(t, "./fixtures/exercise/validate_valid_with_id.html", w)
 			} else {
 				assert.Equal(t, `{"path":"/exercise/list", "target":"#content"}`, w.Result().Header.Get("HX-Location"))
-			}
-			if err := mocksql.ExpectationsWereMet(); err != nil {
-				t.Fatalf("unfulfilled expectations: %v", err)
+				if err := mocksql.ExpectationsWereMet(); err != nil {
+					t.Fatalf("unfulfilled expectations: %v", err)
+				}
 			}
 		})
 	}
 }
 
 func TestReadExercises(t *testing.T) {
-	router, app := SetupTestApp()
+	router, _ := SetupTestApp()
 
 	tests := []struct {
 		dbmocks func()
@@ -380,16 +384,13 @@ func TestReadExercises(t *testing.T) {
 			router.ServeHTTP(w, req)
 
 			assert.Equal(t, 200, w.Code)
-			validateFixture(t, tt.fixture, w, app)
-			if err := mocksql.ExpectationsWereMet(); err != nil {
-				t.Fatalf("unfulfilled expectations: %v", err)
-			}
+			validateFixture(t, tt.fixture, w)
 		})
 	}
 }
 
 func TestDeleteExercises(t *testing.T) {
-	router, app := SetupTestApp()
+	router, _ := SetupTestApp()
 
 	tests := []struct {
 		dbmocks func()
@@ -430,10 +431,107 @@ func TestDeleteExercises(t *testing.T) {
 			router.ServeHTTP(w, req)
 
 			assert.Equal(t, 200, w.Code)
-			validateFixture(t, tt.fixture, w, app)
-			if err := mocksql.ExpectationsWereMet(); err != nil {
-				t.Fatalf("unfulfilled expectations: %v", err)
+			validateFixture(t, tt.fixture, w)
+		})
+	}
+}
+
+func TestListExercisesWithFilter(t *testing.T) {
+	router, app := SetupTestApp()
+
+	tests := []struct {
+		dbmocks func()
+		fixture string
+		form    map[string][]string
+	}{
+		{
+			func() {
+				mocksql.ExpectQuery(`SELECT * FROM "exercises"
+						WHERE name LIKE $1
+						AND ("exercises"."category" = $2
+							AND "exercises"."force" = $3
+							AND "exercises"."level" = $4
+							AND "exercises"."mechanic" = $5
+							AND "exercises"."primary_muscle" = $6)
+						AND EXISTS (
+							SELECT 1 FROM jsonb_array_elements(secondary_muscles) elem
+							WHERE (elem::int) = ANY($7::int[])
+						)
+						AND EXISTS (
+							SELECT 1 FROM jsonb_array_elements(equipment) elem
+							WHERE (elem::int) = ANY($8::int[])
+						)
+						ORDER BY id`).
+					WithArgs("%a%", 0, 0, 0, 0, 0, "{0}", "{0}").
+					WillReturnRows(sqlmock.NewRows(exCols).AddRow(ex1...))
+			},
+			"./fixtures/exercise/filter_single_value.html",
+			map[string][]string{
+				"name":      {"a"},
+				"force":     {"0"},
+				"level":     {"0"},
+				"mechanic":  {"0"},
+				"category":  {"0"},
+				"primary":   {"0"},
+				"secondary": {"0"},
+				"equipment": {"0"},
+			},
+		},
+		{
+			func() {
+				mocksql.ExpectQuery(`SELECT * FROM "exercises"
+						WHERE name LIKE $1
+						AND ("exercises"."category" = $2
+							AND "exercises"."force" IN ($3,$4,$5)
+							AND "exercises"."level" IN ($6,$7,$8)
+							AND "exercises"."mechanic" = $9
+							AND "exercises"."primary_muscle" = $10)
+						AND EXISTS (
+							SELECT 1 FROM jsonb_array_elements(secondary_muscles) elem
+							WHERE (elem::int) = ANY($11::int[])
+						)
+						AND EXISTS (
+							SELECT 1 FROM jsonb_array_elements(equipment) elem
+							WHERE (elem::int) = ANY($12::int[])
+						)
+						ORDER BY id`).
+					WithArgs("%abc%", 0, 0, 1, 2, 0, 1, 2, 0, 0, "{0,1,2,3}", "{0}").
+					WillReturnRows(sqlmock.NewRows(exCols).AddRow(ex1...))
+			},
+			"./fixtures/exercise/filter_multiple_values.html",
+			map[string][]string{
+				"name":      {"abc"},
+				"force":     {"0", "1", "2"},
+				"level":     {"0", "1", "2"},
+				"mechanic":  {"0"},
+				"category":  {"0"},
+				"primary":   {"0"},
+				"secondary": {"0", "1", "2", "3"},
+				"equipment": {"0"},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		testname := filepath.Base(tt.fixture)
+		t.Run(testname, func(t *testing.T) {
+			w := httptest.NewRecorder()
+			body := &bytes.Buffer{}
+			writer := multipart.NewWriter(body)
+			for key, vals := range tt.form {
+				for _, val := range vals {
+					writer.WriteField(key, val)
+				}
 			}
+			writer.Close()
+			req, _ := http.NewRequest("POST", "/exercise/list", body)
+			req.Header.Set("Content-Type", writer.FormDataContentType())
+			tt.dbmocks()
+			router.ServeHTTP(w, req)
+
+			assert.Equal(t, 200, w.Code)
+			validateFixture(t, tt.fixture, w)
+			app.mockFS.AssertExpectations(t)
 		})
 	}
 }
