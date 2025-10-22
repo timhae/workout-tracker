@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"html/template"
+	"io/fs"
 	"log"
+	"mime/multipart"
 	"strconv"
 	"time"
 
@@ -339,79 +341,84 @@ func (a *App) DeleteExercise(c *gin.Context) {
 	if err != nil {
 		log.Printf("db error: %v", err)
 	}
+	// TODO: delete images
 	a.ListExercises(c)
 }
 
 func (a *App) ValidateExercise(c *gin.Context) {
 	var err error
 	var exercise Exercise
-	button := "Create"
-	validationLink := `hx-post="/exercise/validate"`
+	var button, validationLink string
 	validationRequest := c.Request.Header.Get("X-Validation-Only") == "true"
 	id := c.Param("id")
 
-	if err = c.ShouldBindWith(&exercise, binding.FormMultipart); err != nil {
-		log.Printf("bind error: %v+", err)
-	} else if !validationRequest {
-		err = a.insertExercise(id, c, &exercise)
-		if err != nil {
-			log.Printf("insert err: %v+", err)
-		}
-	}
-
-	if err == nil {
-		if !validationRequest {
-			c.Header("HX-Location", `{"path":"/exercise/list", "target":"#content"}`)
-			return
-		} else {
-			err = errors.New("")
-		}
-	}
-
-	if id != "" {
+	if id == "" {
+		button = "Create"
+		validationLink = `hx-post="/exercise/validate"`
+	} else {
 		button = "Update"
 		validationLink = `hx-post="/exercise/` + id + `/validate"`
 	}
 
-	data := map[string]any{
-		"PossibleValues": possibleValues,
-		"ValidationLink": template.HTMLAttr(validationLink),
-		"Input":          exercise,
-		"Error":          err.Error(),
-		"Button":         button,
+	err = c.ShouldBindWith(&exercise, binding.FormMultipart)
+
+	switch {
+	case err != nil:
+		log.Printf("bind error: %v+", err)
+	case validationRequest:
+		err = errors.New("")
+	case id == "":
+		err = a.insertExercise(c, &exercise)
+	case id != "":
+		err = a.updateExercise(c, &exercise, id)
 	}
-	page := htmx.NewComponent("templates/components/exercise_form.html").SetData(data).Wrap(mainContent(), "Content")
-	a.render(c, &page)
+
+	if err != nil {
+		data := map[string]any{
+			"PossibleValues": possibleValues,
+			"ValidationLink": template.HTMLAttr(validationLink),
+			"Input":          exercise,
+			"Error":          err.Error(),
+			"Button":         button,
+		}
+		page := htmx.NewComponent("templates/components/exercise_form.html").SetData(data).Wrap(mainContent(), "Content")
+		a.render(c, &page)
+		return
+	}
+
+	c.Header("HX-Location", `{"path":"/exercise/list", "target":"#content"}`)
 }
 
-func (a *App) insertExercise(id string, c *gin.Context, exercise *Exercise) error {
+func (a *App) updateExercise(c *gin.Context, exercise *Exercise, id string) error {
+	var err error
 	var fileNames []string
 
-	if id == "" {
-		count, err := gorm.G[Exercise](a.db).Where("name = ?", exercise.Name).Count(*a.ctx, "name")
-		if err != nil {
-			log.Printf("db error: %v+", err)
-			return err
-		}
-		if count > 0 {
-			err = errors.New("exercise with name '" + exercise.Name + "' already exists")
-			log.Printf("duplication error: %v+", err)
-			return err
-		}
+	dbExercise, err := gorm.G[Exercise](a.db).Where("id = ?", id).First(*a.ctx)
+	if err != nil {
+		log.Printf("db error: %v+", err)
+		return err
 	}
 
-	fileNames, err := a.saveImages(exercise.Name, c)
+	form, err := c.MultipartForm()
 	if err != nil {
-		log.Printf("upload err: %v+", err)
 		return err
+	}
+	files := form.File["images"]
+
+	switch {
+	case len(files) > 0:
+		fileNames, err = a.saveImages(exercise.Name, c, files)
+		if err != nil {
+			log.Printf("upload err: %v+", err)
+			return err
+		}
+		// TODO: delete images
+	case len(dbExercise.Images) > 0:
+		fileNames = dbExercise.Images
 	}
 	exercise.Images = fileNames
 
-	if id != "" {
-		_, err = gorm.G[Exercise](a.db).Where("id = ?", c.Param("id")).Updates(*a.ctx, *exercise)
-	} else {
-		err = gorm.G[Exercise](a.db).Create(*a.ctx, exercise)
-	}
+	_, err = gorm.G[Exercise](a.db).Where("id = ?", id).Updates(*a.ctx, *exercise)
 	if err != nil {
 		log.Printf("db error: %v+", err)
 		return err
@@ -420,23 +427,52 @@ func (a *App) insertExercise(id string, c *gin.Context, exercise *Exercise) erro
 	return nil
 }
 
-func (a *App) saveImages(name string, c *gin.Context) ([]string, error) {
-	var err error
+func (a *App) insertExercise(c *gin.Context, exercise *Exercise) error {
+	count, err := gorm.G[Exercise](a.db).Where("name = ?", exercise.Name).Count(*a.ctx, "name")
+	if err != nil {
+		log.Printf("db error: %v+", err)
+		return err
+	}
+	if count > 0 {
+		err = errors.New("exercise with name '" + exercise.Name + "' already exists")
+		log.Printf("duplication error: %v+", err)
+		return err
+	}
+
 	form, err := c.MultipartForm()
 	if err != nil {
-		return nil, err
+		return err
 	}
 	files := form.File["images"]
+	fileNames, err := a.saveImages(exercise.Name, c, files)
+	if err != nil {
+		log.Printf("upload err: %v+", err)
+		return err
+	}
+	exercise.Images = fileNames
+
+	err = gorm.G[Exercise](a.db).Create(*a.ctx, exercise)
+	if err != nil {
+		log.Printf("db error: %v+", err)
+		return err
+	}
+
+	return nil
+}
+
+func (a *App) saveImages(name string, c *gin.Context, files []*multipart.FileHeader) ([]string, error) {
 	fileNames := []string{}
+	saver := func(file *multipart.FileHeader, dst string, perm ...fs.FileMode) error { return nil }
+	if a.mockFS != nil {
+		saver = a.mockFS.SaveUploadedFile
+	} else {
+		saver = c.SaveUploadedFile
+	}
 
 	for idx, file := range files {
 		fileName := name + "_" + strconv.Itoa(idx)
 		log.Printf("saving file %s as ./static/images/%s", file.Filename, fileName)
-		if a.mockFS != nil {
-			err = a.mockFS.SaveUploadedFile(file, "./static/images/"+fileName)
-		} else {
-			err = c.SaveUploadedFile(file, "./static/images/"+fileName)
-		}
+		err := saver(file, "./static/images/"+fileName)
 		if err != nil {
 			return nil, err
 		}

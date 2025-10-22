@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io/fs"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -17,7 +18,7 @@ type mockFS struct {
 	mock.Mock
 }
 
-func (m *mockFS) SaveUploadedFile(file *multipart.FileHeader, dst string) error {
+func (m *mockFS) SaveUploadedFile(file *multipart.FileHeader, dst string, perm ...fs.FileMode) error {
 	log.Printf("mock saving file %s as %s", file.Filename, dst)
 	args := m.Called(file, dst)
 	return args.Error(0)
