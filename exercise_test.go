@@ -31,6 +31,8 @@ var (
 	ex2   = []driver.Value{2, t2, t2, "bla", "1", "1", "1", "1", "8", "[1, 5]",
 		"[2, 8]", "ddd", "[]"}
 	validateFixture = func(t *testing.T, fixture string, w *httptest.ResponseRecorder) {
+		assert.Equal(t, http.StatusOK, w.Code)
+
 		f, _ := os.ReadFile(fixture)
 		assert.Equal(t, string(f), w.Body.String())
 		// os.WriteFile(fixture, w.Body.Bytes(), 0o644)
@@ -38,6 +40,24 @@ var (
 		if err := mocksql.ExpectationsWereMet(); err != nil {
 			t.Fatalf("unfulfilled expectations: %v", err)
 		}
+	}
+	createForm = func(form map[string][]string) (*bytes.Buffer, *multipart.Writer) {
+		body := &bytes.Buffer{}
+		writer := multipart.NewWriter(body)
+		for key, vals := range form {
+			for _, val := range vals {
+				if key == "images" {
+					part, _ := writer.CreateFormFile(key, val)
+					empty := make([]byte, 32)
+					file := bytes.NewReader(empty)
+					io.Copy(part, file)
+				} else {
+					writer.WriteField(key, val)
+				}
+			}
+		}
+		writer.Close()
+		return body, writer
 	}
 )
 
@@ -86,7 +106,6 @@ func TestListExercises(t *testing.T) {
 			tt.dbmocks()
 			router.ServeHTTP(w, req)
 
-			assert.Equal(t, 200, w.Code)
 			validateFixture(t, tt.fixture, w)
 		})
 	}
@@ -99,7 +118,6 @@ func TestCreateExercise(t *testing.T) {
 	req, _ := http.NewRequest("GET", "/exercise", nil)
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, 200, w.Code)
 	validateFixture(t, "./fixtures/exercise/form.html", w)
 }
 
@@ -235,6 +253,7 @@ func TestValidateExercise(t *testing.T) {
 			},
 			"./nonexistent/validate_valid.html",
 			func(t *testing.T, _ string, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, w.Code)
 				assert.Equal(t, `{"path":"/exercise/list", "target":"#content"}`, w.Result().Header.Get("HX-Location"))
 				if err := mocksql.ExpectationsWereMet(); err != nil {
 					t.Fatalf("unfulfilled expectations: %v", err)
@@ -265,6 +284,7 @@ func TestValidateExercise(t *testing.T) {
 			},
 			"./nonexistent/validate_valid_with_files.html",
 			func(t *testing.T, _ string, w *httptest.ResponseRecorder) {
+				assert.Equal(t, http.StatusOK, w.Code)
 				assert.Equal(t, `{"path":"/exercise/list", "target":"#content"}`, w.Result().Header.Get("HX-Location"))
 				if err := mocksql.ExpectationsWereMet(); err != nil {
 					t.Fatalf("unfulfilled expectations: %v", err)
@@ -277,21 +297,7 @@ func TestValidateExercise(t *testing.T) {
 		testname := filepath.Base(tt.fixture)
 		t.Run(testname, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			body := &bytes.Buffer{}
-			writer := multipart.NewWriter(body)
-			for key, vals := range tt.form {
-				for _, val := range vals {
-					if key == "images" {
-						part, _ := writer.CreateFormFile(key, val)
-						empty := make([]byte, 32)
-						file := bytes.NewReader(empty)
-						io.Copy(part, file)
-					} else {
-						writer.WriteField(key, val)
-					}
-				}
-			}
-			writer.Close()
+			body, writer := createForm(tt.form)
 			req, _ := http.NewRequest("POST", "/exercise/validate", body)
 			req.Header.Set("Content-Type", writer.FormDataContentType())
 			if strings.Contains(testname, "validation_request") {
@@ -300,7 +306,6 @@ func TestValidateExercise(t *testing.T) {
 			tt.dbmocks(app)
 			router.ServeHTTP(w, req)
 
-			assert.Equal(t, 200, w.Code)
 			tt.validate(t, tt.fixture, w)
 			app.mockFS.AssertExpectations(t)
 		})
@@ -316,14 +321,14 @@ func TestValidateExerciseWithID(t *testing.T) {
 		testname := fmt.Sprintf("validate_with_id_validation_only_%t.html", validationOnly)
 		t.Run(testname, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			body := &bytes.Buffer{}
-			writer := multipart.NewWriter(body)
-			writer.WriteField("name", "test")
-			writer.WriteField("force", "2")
-			writer.WriteField("secondary", "2")
-			writer.WriteField("equipment", "1")
-			writer.WriteField("instructions", "test")
-			writer.Close()
+			form := map[string][]string{
+				"name":         {"test"},
+				"force":        {"2"},
+				"secondary":    {"2"},
+				"equipment":    {"1"},
+				"instructions": {"test"},
+			}
+			body, writer := createForm(form)
 			req, _ := http.NewRequest("POST", "/exercise/42/validate", body)
 			req.Header.Set("Content-Type", writer.FormDataContentType())
 			if validationOnly {
@@ -337,10 +342,10 @@ func TestValidateExerciseWithID(t *testing.T) {
 			}
 			router.ServeHTTP(w, req)
 
-			assert.Equal(t, 200, w.Code)
 			if validationOnly {
 				validateFixture(t, "./fixtures/exercise/validate_valid_with_id.html", w)
 			} else {
+				assert.Equal(t, http.StatusOK, w.Code)
 				assert.Equal(t, `{"path":"/exercise/list", "target":"#content"}`, w.Result().Header.Get("HX-Location"))
 				if err := mocksql.ExpectationsWereMet(); err != nil {
 					t.Fatalf("unfulfilled expectations: %v", err)
@@ -383,7 +388,6 @@ func TestReadExercises(t *testing.T) {
 			tt.dbmocks()
 			router.ServeHTTP(w, req)
 
-			assert.Equal(t, 200, w.Code)
 			validateFixture(t, tt.fixture, w)
 		})
 	}
@@ -430,7 +434,6 @@ func TestDeleteExercises(t *testing.T) {
 			tt.dbmocks()
 			router.ServeHTTP(w, req)
 
-			assert.Equal(t, 200, w.Code)
 			validateFixture(t, tt.fixture, w)
 		})
 	}
@@ -453,13 +456,13 @@ func TestListExercisesWithFilter(t *testing.T) {
 							AND "exercises"."level" = $4
 							AND "exercises"."mechanic" = $5
 							AND "exercises"."primary_muscle" = $6)
-						AND EXISTS (
+						AND NOT EXISTS (
 							SELECT 1 FROM jsonb_array_elements(secondary_muscles) elem
-							WHERE (elem::int) = ANY($7::int[])
+							WHERE (elem::int) NOT IN (SELECT unnest($7::int[]))
 						)
-						AND EXISTS (
+						AND NOT EXISTS (
 							SELECT 1 FROM jsonb_array_elements(equipment) elem
-							WHERE (elem::int) = ANY($8::int[])
+							WHERE (elem::int) NOT IN (SELECT unnest($8::int[]))
 						)
 						ORDER BY id`).
 					WithArgs("%a%", 0, 0, 0, 0, 0, "{0}", "{0}").
@@ -486,13 +489,13 @@ func TestListExercisesWithFilter(t *testing.T) {
 							AND "exercises"."level" IN ($6,$7,$8)
 							AND "exercises"."mechanic" = $9
 							AND "exercises"."primary_muscle" = $10)
-						AND EXISTS (
+						AND NOT EXISTS (
 							SELECT 1 FROM jsonb_array_elements(secondary_muscles) elem
-							WHERE (elem::int) = ANY($11::int[])
+							WHERE (elem::int) NOT IN (SELECT unnest($11::int[]))
 						)
-						AND EXISTS (
+						AND NOT EXISTS (
 							SELECT 1 FROM jsonb_array_elements(equipment) elem
-							WHERE (elem::int) = ANY($12::int[])
+							WHERE (elem::int) NOT IN (SELECT unnest($12::int[]))
 						)
 						ORDER BY id`).
 					WithArgs("%abc%", 0, 0, 1, 2, 0, 1, 2, 0, 0, "{0,1,2,3}", "{0}").
@@ -516,20 +519,12 @@ func TestListExercisesWithFilter(t *testing.T) {
 		testname := filepath.Base(tt.fixture)
 		t.Run(testname, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			body := &bytes.Buffer{}
-			writer := multipart.NewWriter(body)
-			for key, vals := range tt.form {
-				for _, val := range vals {
-					writer.WriteField(key, val)
-				}
-			}
-			writer.Close()
+			body, writer := createForm(tt.form)
 			req, _ := http.NewRequest("POST", "/exercise/list", body)
 			req.Header.Set("Content-Type", writer.FormDataContentType())
 			tt.dbmocks()
 			router.ServeHTTP(w, req)
 
-			assert.Equal(t, 200, w.Code)
 			validateFixture(t, tt.fixture, w)
 			app.mockFS.AssertExpectations(t)
 		})

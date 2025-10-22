@@ -264,8 +264,9 @@ func (a *App) ListExercises(c *gin.Context) {
 func (a *App) ListExercisesWithFilter(c *gin.Context) {
 	var filter ExerciseFilter
 	var exercises []Exercise
-	if err := c.ShouldBindWith(&filter, binding.FormMultipart); err != nil {
+	if err := c.MustBindWith(&filter, binding.FormMultipart); err != nil {
 		log.Printf("bind error: %v", err)
+		return
 	}
 	exercises, err := gorm.G[Exercise](a.db).Order("id").
 		Where("name LIKE ?", "%"+filter.Name+"%").
@@ -276,13 +277,13 @@ func (a *App) ListExercisesWithFilter(c *gin.Context) {
 			"category":       filter.Category,
 			"primary_muscle": filter.PrimaryMuscle,
 		}).
-		Where(`EXISTS (
+		Where(`NOT EXISTS (
 			SELECT 1 FROM jsonb_array_elements(secondary_muscles) elem
-			WHERE (elem::int) = ANY(?::int[])
+			WHERE (elem::int) NOT IN (SELECT unnest(?::int[]))
 		)`, pq.Array(filter.SecondaryMuscle)).
-		Where(`EXISTS (
+		Where(`NOT EXISTS (
 			SELECT 1 FROM jsonb_array_elements(equipment) elem
-			WHERE (elem::int) = ANY(?::int[])
+			WHERE (elem::int) NOT IN (SELECT unnest(?::int[]))
 		)`, pq.Array(filter.Equipment)).
 		Find(c)
 	if err != nil {
@@ -393,7 +394,9 @@ func (a *App) insertExercise(id string, c *gin.Context, exercise *Exercise) erro
 			return err
 		}
 		if count > 0 {
-			return errors.New("exercise with name '" + exercise.Name + "' already exists")
+			err = errors.New("exercise with name '" + exercise.Name + "' already exists")
+			log.Printf("duplication error: %v+", err)
+			return err
 		}
 	}
 
