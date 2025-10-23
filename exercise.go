@@ -3,12 +3,15 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html/template"
 	"io/fs"
 	"log"
 	"mime/multipart"
 	"os"
+	"reflect"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -254,7 +257,8 @@ func (a *App) ListExercises(c *gin.Context) {
 		"PossibleValues": possibleValues,
 	}
 	table := htmx.NewComponent("templates/components/exercise_table.html").
-		AddTemplateFunction("exerciseAction", exerciseAction)
+		AddTemplateFunction("exerciseAction", exerciseAction).
+		AddTemplateFunction("join", join)
 	filter := htmx.NewComponent("templates/components/exercise_filter.html")
 	page := htmx.NewComponent("templates/pages/exercises.html").
 		With(table, "Table").
@@ -302,7 +306,8 @@ func (a *App) ListExercisesWithFilter(c *gin.Context) {
 	}
 	page := htmx.NewComponent("templates/components/exercise_table.html").
 		SetData(data).
-		AddTemplateFunction("exerciseAction", exerciseAction)
+		AddTemplateFunction("exerciseAction", exerciseAction).
+		AddTemplateFunction("join", join)
 	a.render(c, &page)
 }
 
@@ -319,6 +324,7 @@ func (a *App) CreateExercise(c *gin.Context) {
 
 func (a *App) ReadExercise(c *gin.Context) {
 	id := c.Param("id")
+	log.Printf("id: %v+", id)
 	exercise, err := gorm.G[Exercise](a.db).Where("id = ?", id).First(*a.ctx)
 	if err != nil {
 		log.Printf("db error: %v", err)
@@ -503,6 +509,24 @@ func (a *App) deleteImages(files []string) {
 			log.Printf("remove file error: %v+", err)
 		}
 	}
+}
+
+func join(values any, sep string) string {
+	v := reflect.ValueOf(values)
+	if v.Kind() != reflect.Slice {
+		return fmt.Sprint(values)
+	}
+
+	var b strings.Builder
+	for i := range v.Len() {
+		elem := v.Index(i).Interface()
+		s, _ := elem.(fmt.Stringer)
+		if i > 0 {
+			b.WriteString(sep)
+		}
+		b.WriteString(s.String())
+	}
+	return b.String()
 }
 
 func exerciseAction(action string, id uint) any {

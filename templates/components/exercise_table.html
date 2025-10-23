@@ -21,10 +21,20 @@
           <td>{{ $exercise.Mechanic }}</td>
           <td>{{ $exercise.Category }}</td>
           <td>{{ $exercise.PrimaryMuscle }}</td>
-          <td>{{ $exercise.SecondaryMuscles }}</td>
-          <td>{{ $exercise.Equipment }}</td>
+          <td>{{ join $exercise.SecondaryMuscles ", " }}</td>
+          <td>{{ join $exercise.Equipment ", " }}</td>
           <td>{{ $exercise.Instructions }}</td>
-          <td>{{ $exercise.Images }}</td>
+          <td>
+            {{- range $img := $exercise.Images }}
+              <img
+                src="/static/images/{{ $img }}"
+                alt="could not render /static/images/{{ $img }}"
+                width="100"
+                height="100"
+                sizes="auto"
+              />
+            {{- end -}}
+          </td>
         </tr>
       {{- end }}
     </tbody>

@@ -32,10 +32,10 @@ var (
 	validateFixture = func(t *testing.T, fixture string, w *httptest.ResponseRecorder) {
 		assert.Equal(t, http.StatusOK, w.Code)
 
-		// f, _ := os.ReadFile(fixture)
-		// assert.Equal(t, string(f), w.Body.String())
+		f, _ := os.ReadFile(fixture)
+		assert.Equal(t, string(f), w.Body.String())
 		// TODO: leave this commented out
-		os.WriteFile(fixture, w.Body.Bytes(), 0o644)
+		// os.WriteFile(fixture, w.Body.Bytes(), 0o644)
 
 		if err := mocksql.ExpectationsWereMet(); err != nil {
 			t.Fatalf("unfulfilled expectations: %v", err)
@@ -556,7 +556,7 @@ func TestDeleteExercises(t *testing.T) {
 				mockRM.On("Remove", "./static/images/fff_1").Return(nil)
 				a.mockRM = mockRM
 			},
-			"./fixtures/exercise/list_single.html",
+			"./fixtures/exercise/list_other_single.html",
 		},
 		{
 			func(a *App) {
