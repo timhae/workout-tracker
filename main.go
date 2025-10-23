@@ -14,6 +14,16 @@ import (
 	"gorm.io/gorm"
 )
 
+type mockRM struct {
+	mock.Mock
+}
+
+func (m *mockRM) Remove(file string) error {
+	log.Printf("mock removing file %s", file)
+	args := m.Called(file)
+	return args.Error(0)
+}
+
 type mockFS struct {
 	mock.Mock
 }
@@ -29,9 +39,11 @@ type App struct {
 	db     *gorm.DB
 	ctx    *context.Context
 	mockFS *mockFS
+	mockRM *mockRM
 }
 
 func main() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		DSN: "host=localhost user=postgres password=postgres dbname=postgres port=5432 sslmode=disable TimeZone=Europe/Berlin",
 	}), &gorm.Config{})

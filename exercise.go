@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"log"
 	"mime/multipart"
+	"os"
 	"strconv"
 	"time"
 
@@ -337,11 +338,16 @@ func (a *App) ReadExercise(c *gin.Context) {
 }
 
 func (a *App) DeleteExercise(c *gin.Context) {
-	_, err := gorm.G[Exercise](a.db).Where("id = ?", c.Param("id")).Delete(*a.ctx)
+	id := c.Param("id")
+	exercise, err := gorm.G[Exercise](a.db).Where("id = ?", id).First(*a.ctx)
 	if err != nil {
 		log.Printf("db error: %v", err)
 	}
-	// TODO: delete images
+	a.deleteImages(exercise.Images)
+	_, err = gorm.G[Exercise](a.db).Where("id = ?", id).Delete(*a.ctx)
+	if err != nil {
+		log.Printf("db error: %v", err)
+	}
 	a.ListExercises(c)
 }
 
@@ -407,12 +413,12 @@ func (a *App) updateExercise(c *gin.Context, exercise *Exercise, id string) erro
 
 	switch {
 	case len(files) > 0:
+		a.deleteImages(dbExercise.Images) // has to be before saveImages
 		fileNames, err = a.saveImages(exercise.Name, c, files)
 		if err != nil {
-			log.Printf("upload err: %v+", err)
+			log.Printf("upload error: %v+", err)
 			return err
 		}
-		// TODO: delete images
 	case len(dbExercise.Images) > 0:
 		fileNames = dbExercise.Images
 	}
@@ -446,7 +452,7 @@ func (a *App) insertExercise(c *gin.Context, exercise *Exercise) error {
 	files := form.File["images"]
 	fileNames, err := a.saveImages(exercise.Name, c, files)
 	if err != nil {
-		log.Printf("upload err: %v+", err)
+		log.Printf("upload error: %v+", err)
 		return err
 	}
 	exercise.Images = fileNames
@@ -461,8 +467,8 @@ func (a *App) insertExercise(c *gin.Context, exercise *Exercise) error {
 }
 
 func (a *App) saveImages(name string, c *gin.Context, files []*multipart.FileHeader) ([]string, error) {
+	var saver func(*multipart.FileHeader, string, ...fs.FileMode) error
 	fileNames := []string{}
-	saver := func(file *multipart.FileHeader, dst string, perm ...fs.FileMode) error { return nil }
 	if a.mockFS != nil {
 		saver = a.mockFS.SaveUploadedFile
 	} else {
@@ -480,6 +486,23 @@ func (a *App) saveImages(name string, c *gin.Context, files []*multipart.FileHea
 	}
 
 	return fileNames, nil
+}
+
+func (a *App) deleteImages(files []string) {
+	var remover func(string) error
+	if a.mockFS != nil {
+		remover = a.mockRM.Remove
+	} else {
+		remover = os.Remove
+	}
+
+	for _, file := range files {
+		log.Printf("removing file ./static/images/%s", file)
+		err := remover("./static/images/" + file)
+		if err != nil { // ignore error
+			log.Printf("remove file error: %v+", err)
+		}
+	}
 }
 
 func exerciseAction(action string, id uint) any {

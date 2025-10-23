@@ -28,6 +28,7 @@ func SetupTestApp() (*gin.Engine, *App) {
 		db:     db,
 		ctx:    &ctx,
 		mockFS: &mockFS{},
+		mockRM: &mockRM{},
 	}
 	router := app.setupRouter(gin.TestMode)
 	return router, app

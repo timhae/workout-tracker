@@ -34,6 +34,7 @@ var (
 
 		// f, _ := os.ReadFile(fixture)
 		// assert.Equal(t, string(f), w.Body.String())
+		// TODO: leave this commented out
 		os.WriteFile(fixture, w.Body.Bytes(), 0o644)
 
 		if err := mocksql.ExpectationsWereMet(); err != nil {
@@ -46,7 +47,6 @@ var (
 		for key, vals := range form {
 			for _, val := range vals {
 				if key == "images" {
-					fmt.Println("creating form file")
 					part, _ := writer.CreateFormFile(key, val)
 					empty := make([]byte, 32)
 					file := bytes.NewReader(empty)
@@ -416,8 +416,14 @@ func TestValidateExerciseWithID(t *testing.T) {
 				mocksql.ExpectQuery(`SELECT * FROM "exercises" WHERE id = $1 ORDER BY "exercises"."id" LIMIT $2`).
 					WithArgs("42", 1).
 					WillReturnRows(sqlmock.NewRows(exCols).AddRow(ex1...))
+				mockRM := &mockRM{}
+				rm1 := mockRM.On("Remove", "./static/images/fff_0").Return(nil)
+				rm2 := mockRM.On("Remove", "./static/images/fff_1").Return(nil)
+				a.mockRM = mockRM
 				mockFS := &mockFS{}
-				mockFS.On("SaveUploadedFile", mock.Anything, "./static/images/test_0").Return(fmt.Errorf("save file error"))
+				mockFS.On("SaveUploadedFile", mock.Anything, "./static/images/test_0").
+					Return(fmt.Errorf("save file error")).
+					NotBefore(rm1, rm2)
 				a.mockFS = mockFS
 			},
 			map[string][]string{
@@ -441,8 +447,12 @@ func TestValidateExerciseWithID(t *testing.T) {
 					WithArgs(sqlmock.AnyArg(), "test", 2, "[2]", "[1]", "test", `["test_0"]`, "42").
 					WillReturnResult(sqlmock.NewResult(1, 1))
 				mocksql.ExpectCommit()
+				mockRM := &mockRM{}
+				rm1 := mockRM.On("Remove", "./static/images/fff_0").Return(nil)
+				rm2 := mockRM.On("Remove", "./static/images/fff_1").Return(nil)
+				a.mockRM = mockRM
 				mockFS := &mockFS{}
-				mockFS.On("SaveUploadedFile", mock.Anything, "./static/images/test_0").Return(nil)
+				mockFS.On("SaveUploadedFile", mock.Anything, "./static/images/test_0").Return(nil).NotBefore(rm1, rm2)
 				a.mockFS = mockFS
 			},
 			map[string][]string{
@@ -523,33 +533,47 @@ func TestReadExercises(t *testing.T) {
 }
 
 func TestDeleteExercises(t *testing.T) {
-	router, _ := SetupTestApp()
+	router, app := SetupTestApp()
 
 	tests := []struct {
-		dbmocks func()
+		dbmocks func(*App)
 		fixture string
 	}{
 		{
-			func() {
+			func(a *App) {
+				mocksql.ExpectQuery(`SELECT * FROM "exercises" WHERE id = $1 ORDER BY "exercises"."id" LIMIT $2`).
+					WithArgs("1", 1).
+					WillReturnRows(sqlmock.NewRows(exCols).AddRow(ex1...))
 				mocksql.ExpectBegin()
 				mocksql.ExpectExec(`DELETE FROM "exercises" WHERE id = $1`).
-					WithArgs("2").
+					WithArgs("1").
 					WillReturnResult(sqlmock.NewResult(0, 1))
 				mocksql.ExpectCommit()
 				mocksql.ExpectQuery(`SELECT * FROM "exercises" ORDER BY id`).
-					WillReturnRows(sqlmock.NewRows(exCols).AddRow(ex1...))
+					WillReturnRows(sqlmock.NewRows(exCols).AddRow(ex2...))
+				mockRM := &mockRM{}
+				mockRM.On("Remove", "./static/images/fff_0").Return(nil)
+				mockRM.On("Remove", "./static/images/fff_1").Return(nil)
+				a.mockRM = mockRM
 			},
 			"./fixtures/exercise/list_single.html",
 		},
 		{
-			func() {
+			func(a *App) {
+				mocksql.ExpectQuery(`SELECT * FROM "exercises" WHERE id = $1 ORDER BY "exercises"."id" LIMIT $2`).
+					WithArgs("1", 1).
+					WillReturnRows(sqlmock.NewRows(exCols).AddRow(ex1...))
 				mocksql.ExpectBegin()
 				mocksql.ExpectExec(`DELETE FROM "exercises" WHERE id = $1`).
-					WithArgs("2").
+					WithArgs("1").
 					WillReturnError(fmt.Errorf("test delete error"))
 				mocksql.ExpectRollback()
 				mocksql.ExpectQuery(`SELECT * FROM "exercises" ORDER BY id`).
 					WillReturnRows(sqlmock.NewRows(exCols).AddRow(ex1...).AddRow(ex2...))
+				mockRM := &mockRM{}
+				mockRM.On("Remove", "./static/images/fff_0").Return(nil)
+				mockRM.On("Remove", "./static/images/fff_1").Return(nil)
+				a.mockRM = mockRM
 			},
 			"./fixtures/exercise/list_multiple.html",
 		},
@@ -559,8 +583,8 @@ func TestDeleteExercises(t *testing.T) {
 		testname := filepath.Base(tt.fixture)
 		t.Run(testname, func(t *testing.T) {
 			w := httptest.NewRecorder()
-			req, _ := http.NewRequest("DELETE", "/exercise/2", nil)
-			tt.dbmocks()
+			req, _ := http.NewRequest("DELETE", "/exercise/1", nil)
+			tt.dbmocks(app)
 			router.ServeHTTP(w, req)
 
 			validateFixture(t, tt.fixture, w)
