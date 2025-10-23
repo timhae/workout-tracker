@@ -76,7 +76,6 @@ func (a *App) setupRouter(mode string) *gin.Engine {
 		c.Redirect(http.StatusMovedPermanently, "/workout/list")
 	})
 	router.GET("/workout/list", a.ListWorkouts)
-	router.GET("/plan/list", a.ListPlans)
 	router.GET("/measurement/list", a.ListMeasurements)
 
 	ex := router.Group("/exercise")
@@ -88,6 +87,10 @@ func (a *App) setupRouter(mode string) *gin.Engine {
 	ex.DELETE("/:id", a.DeleteExercise)
 	ex.POST("/:id/validate", a.ValidateExercise)
 
+	plan := router.Group("/plan")
+	plan.GET("/list", a.ListPlans)
+	plan.GET("", a.CreatePlan)
+
 	return router
 }
 
@@ -96,14 +99,6 @@ func (a *App) ListWorkouts(c *gin.Context) {
 		"Text": "Welcome to the workouts page",
 	}
 	page := htmx.NewComponent("templates/pages/workouts.html").SetData(data).Wrap(mainContent(), "Content")
-	a.render(c, &page)
-}
-
-func (a *App) ListPlans(c *gin.Context) {
-	data := map[string]any{
-		"Text": "Welcome to the plans page",
-	}
-	page := htmx.NewComponent("templates/pages/plans.html").SetData(data).Wrap(mainContent(), "Content")
 	a.render(c, &page)
 }
 

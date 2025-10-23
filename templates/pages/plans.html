@@ -1,1 +1,9 @@
-<div>{{ .Data.Text }}</div>
+<div hx-boost="true" hx-target="#content">
+  <a href="/plan">create new</a>
+  <div>
+    {{ .Partials.Filter }}
+  </div>
+  <div>
+    {{ .Partials.Table }}
+  </div>
+</div>
