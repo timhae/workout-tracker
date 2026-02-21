@@ -535,6 +535,8 @@ func exerciseAction(action string, id uint) any {
 		return template.HTML(`<button hx-delete="/exercise/` + strconv.FormatUint(uint64(id), 10) + `" hx-confirm="Delete exercise?">Del</button>`)
 	case "Edit":
 		return template.HTML(`<button hx-get="/exercise/` + strconv.FormatUint(uint64(id), 10) + `" hx-push-url="/exercise/` + strconv.FormatUint(uint64(id), 10) + `">Edit</button>`)
+	case "Add":
+		return template.HTML(`<button hx-get="/exercise/` + strconv.FormatUint(uint64(id), 10) + `" hx-push-url="/exercise/` + strconv.FormatUint(uint64(id), 10) + `">Add</button>`)
 	default:
 		return ""
 	}
